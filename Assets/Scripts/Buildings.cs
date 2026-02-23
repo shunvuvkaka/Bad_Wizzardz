@@ -7,9 +7,14 @@ public class Buildings : MonoBehaviour
     [Header("Building Params")]
     public float roadDist;
     public float maxDist;
-    public int width;
-    public int space;
+    public float minBreadth;
+    [Header("Building Size and Spacing")]
+    public Vector2Int widthRange;
+    public Vector2Int spaceRange;
+    public Vector2 heightRange;
     public float buildingGap;
+    [Header("References")]
+    [SerializeField] private Transform buildingParent;
     private Dictionary<int, Vector3> points;
     private Dictionary<int, Vector3> normals;
     private Road road;
@@ -30,6 +35,10 @@ public class Buildings : MonoBehaviour
 
         while (rIndex < road.globalIndex - 10)
         {
+            int width = Mathf.RoundToInt(Random.Range(widthRange.x, widthRange.y));
+            int space = Mathf.RoundToInt(Random.Range(spaceRange.x, spaceRange.y));
+            float height = Random.Range(heightRange.x, heightRange.y);
+
             //negative sign flipps normal to right
             Vector3 fPoint = points[rIndex];
             Vector3 fNormal = -normals[rIndex];
@@ -38,6 +47,12 @@ public class Buildings : MonoBehaviour
 
             //calulating farthest edge distance
             float backDist = CalculateDistance(fPoint, fNormal, lPoint, lNormal);
+
+            if (backDist < minBreadth)
+            {
+                rIndex ++;
+                continue;
+            }
 
             //creating points that will be converted to mesh
             BasePoints basePoints = new BasePoints
@@ -48,7 +63,7 @@ public class Buildings : MonoBehaviour
                 lPoint + lNormal * roadDist
             );
 
-            ConstructBuilding(basePoints, 10f);
+            ConstructBuilding(basePoints, height);
 
             Debug.DrawRay(fPoint, fNormal * backDist, impoactCol, float.MaxValue);
             Debug.DrawRay(lPoint, lNormal * backDist, impoactCol, float.MaxValue);
@@ -134,6 +149,9 @@ public class Buildings : MonoBehaviour
         RaycastHit pHit;
         RaycastHit qHit;
 
+        p += Vector3.up * 0.1f;
+        q += Vector3.up * 0.1f;
+
         Physics.Raycast(p, r, out pHit, maxDist + roadDist);
         Physics.Raycast(q, s, out qHit, maxDist + roadDist);
 
@@ -144,7 +162,7 @@ public class Buildings : MonoBehaviour
 
         float min = Mathf.Min(pHit.distance, qHit.distance);
 
-        return min;
+        return min - buildingGap;
     }
 
     void ConstructBuilding(BasePoints basePoints, float height)
@@ -157,6 +175,40 @@ public class Buildings : MonoBehaviour
             basePoints.bl + (Vector3.up * height),
             basePoints.tl + (Vector3.up * height)
         );
+        GameObject go = new GameObject($" Building {rIndex}");
+        go.transform.parent = buildingParent;
+
+        MeshFilter mf = go.AddComponent<MeshFilter>();
+        MeshRenderer mr = go.AddComponent<MeshRenderer>();
+        MeshCollider mc = go.AddComponent<MeshCollider>();
+
+        Mesh mesh = new Mesh();
+
+        //oh boy we love some manually winded tris
+
+        mesh.vertices = new Vector3[]{basePoints.br, basePoints.bl, basePoints.tr, basePoints.tl, 
+                                      topPoints.br, topPoints.bl, topPoints.tr, topPoints.tl};
+        
+        mesh.triangles = new int[]
+        {
+            1, 4, 0,
+            5, 4, 1,
+            5, 1, 3,
+            7, 5, 3,
+            7, 3, 2,
+            2, 6, 7,
+            0, 4, 6,
+            6, 2, 0,
+            5, 7, 6,
+            6, 4, 5
+        };
+        mesh.RecalculateNormals();
+
+        mf.mesh = mesh;
+        mc.sharedMesh = mesh;
+
+        mr.material = road.roadMaterial;
+        mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 
         //debug lines
         Debug.DrawLine(basePoints.br, basePoints.bl, Color.cyan, float.MaxValue);
