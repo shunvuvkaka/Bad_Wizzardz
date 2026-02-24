@@ -1,5 +1,5 @@
+using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class Buildings : MonoBehaviour
@@ -15,15 +15,19 @@ public class Buildings : MonoBehaviour
     public float buildingGap;
     [Header("References")]
     [SerializeField] private Transform buildingParent;
+
+    public bool debugLines;
     private Dictionary<int, Vector3> points;
     private Dictionary<int, Vector3> normals;
     private Road road;
     private int rIndex = 0;
     private int lIndex = 0;
+    private int endBuffer;
     private Color impoactCol;
 
     void Start()
     {
+        endBuffer = widthRange.y + spaceRange.y + 1;
         road = Road.Instance;
         roadDist += road.roadWidth / 2;
     }
@@ -33,73 +37,91 @@ public class Buildings : MonoBehaviour
         points = road.pointDict;
         normals = road.normalDict;
 
-        while (rIndex < road.globalIndex - 10)
+        while (rIndex < road.globalIndex - endBuffer)
         {
-            int width = Mathf.RoundToInt(Random.Range(widthRange.x, widthRange.y));
-            int space = Mathf.RoundToInt(Random.Range(spaceRange.x, spaceRange.y));
-            float height = Random.Range(heightRange.x, heightRange.y);
+            InitialBuildings(ref rIndex, true);
+        }
 
+        while (lIndex < road.globalIndex - endBuffer)
+        {
+            InitialBuildings(ref lIndex, false);
+        }
+        
+    }
+    void InitialBuildings(ref int index, bool right)
+    {
+        int width = Mathf.RoundToInt(UnityEngine.Random.Range(widthRange.x, widthRange.y));
+        int space = Mathf.RoundToInt(UnityEngine.Random.Range(spaceRange.x, spaceRange.y));
+        float height = UnityEngine.Random.Range(heightRange.x, heightRange.y);
+
+        BuildPoints build = new BuildPoints
+        {
+            fp = points[index],
+            lp = points[index + width]
+        };
+
+        if (right)
+        {
             //negative sign flipps normal to right
-            Vector3 fPoint = points[rIndex];
-            Vector3 fNormal = -normals[rIndex];
-            Vector3 lPoint = points[rIndex + width];
-            Vector3 lNormal = -normals[rIndex + width];
-
-            //calulating farthest edge distance
-            float backDist = CalculateDistance(fPoint, fNormal, lPoint, lNormal);
-
-            if (backDist < minBreadth)
-            {
-                rIndex ++;
-                continue;
-            }
-
-            //creating points that will be converted to mesh
-            BasePoints basePoints = new BasePoints
-            (
-                fPoint + fNormal * backDist,
-                lPoint + lNormal * backDist,
-                fPoint + fNormal * roadDist,
-                lPoint + lNormal * roadDist
-            );
-
-            ConstructBuilding(basePoints, height);
-
-            Debug.DrawRay(fPoint, fNormal * backDist, impoactCol, float.MaxValue);
-            Debug.DrawRay(lPoint, lNormal * backDist, impoactCol, float.MaxValue);
-
-            rIndex = rIndex + width + space;
-
+            build.fn = -normals[index];
+            build.ln = -normals[index + width];
         }
-
-        /*
-        while (lIndex < road.globalIndex - 10)
+        else
         {
-            Debug.DrawRay(points[lIndex], normals[lIndex] * roadDist, Color.red, float.MaxValue);
-            lIndex++;
+            build.fn = normals[index];
+            build.ln = normals[index + width];
         }
-        */
+
+        //calulating farthest edge distance
+        float backDist = CalculateDistance(build);
+
+        if (backDist - roadDist < minBreadth)
+        {
+            index ++;
+            return;
+        }
+
+        //creating points that will be converted to mesh
+        BasePoints basePoints = new BasePoints
+        (
+            build.fp + build.fn * backDist,
+            build.lp + build.ln * backDist,
+            build.fp + build.fn * roadDist,
+            build.lp + build.ln * roadDist
+        );
+
+        ConstructBuilding(basePoints, height, right);
+
+        if (debugLines)
+        {
+            Debug.DrawRay(build.fp, build.fn * backDist, impoactCol, float.MaxValue);
+            Debug.DrawRay(build.lp, build.ln * backDist, impoactCol, float.MaxValue);
+        }
+
+        index = index + width + space;
     }
 
-    float CalculateDistance(Vector3 p, Vector3 r, Vector3 q, Vector3 s)
+    
+
+    float CalculateDistance(BuildPoints build)
     {
         impoactCol = Color.black;
 
         //checks whether the intersect or collision of the back edge is closest
-        float iDist = IntersectDistance(p, r, q, s);
-        float rDist = RaycastDistance(p, r, q, s);
+        float iDist = IntersectDistance(build);
+        float rDist = RaycastDistance(build);
 
         return Mathf.Min(iDist, rDist);
     }
 
-    float IntersectDistance(Vector3 p, Vector3 r, Vector3 q, Vector3 s)
+    float IntersectDistance(BuildPoints build)
     {
         //convert from 3d plane to 2d xy plane
-        p = new Vector2(p.x, p.z);
-        q = new Vector2(q.x, q.z);
+        Vector2 p = new Vector2(build.fp.x, build.fp.z);
+        Vector2 q = new Vector2(build.lp.x, build.lp.z);
 
-        r = new Vector2(r.x, r.z).normalized;
-        s = new Vector2(s.x, s.z).normalized;
+        Vector2 r = new Vector2(build.fn.x, build.fn.z).normalized;
+        Vector2 s = new Vector2(build.ln.x, build.ln.z).normalized;
 
         //cross between two normals (unity whyyyyyyy do u provide vector2 dot and not vector2 cross???)
         float rxs = r.x * s.y - r.y * s.x;
@@ -144,16 +166,16 @@ public class Buildings : MonoBehaviour
         return maxDist + roadDist;
     }
 
-    float RaycastDistance(Vector3 p, Vector3 r, Vector3 q, Vector3 s)
+    float RaycastDistance(BuildPoints build)
     {
         RaycastHit pHit;
         RaycastHit qHit;
 
-        p += Vector3.up * 0.1f;
-        q += Vector3.up * 0.1f;
+        build.fp += Vector3.up * 0.1f;
+        build.lp += Vector3.up * 0.1f;
 
-        Physics.Raycast(p, r, out pHit, maxDist + roadDist);
-        Physics.Raycast(q, s, out qHit, maxDist + roadDist);
+        Physics.Raycast(build.fp, build.fn, out pHit, maxDist + roadDist);
+        Physics.Raycast(build.lp, build.ln, out qHit, maxDist + roadDist);
 
         if (pHit.collider == null && qHit.collider == null)
             return maxDist + roadDist;
@@ -165,7 +187,7 @@ public class Buildings : MonoBehaviour
         return min - buildingGap;
     }
 
-    void ConstructBuilding(BasePoints basePoints, float height)
+    void ConstructBuilding(BasePoints basePoints, float height, bool right)
     {
         //simply moves the base points up by height
         BasePoints topPoints = new BasePoints
@@ -189,7 +211,7 @@ public class Buildings : MonoBehaviour
         mesh.vertices = new Vector3[]{basePoints.br, basePoints.bl, basePoints.tr, basePoints.tl, 
                                       topPoints.br, topPoints.bl, topPoints.tr, topPoints.tl};
         
-        mesh.triangles = new int[]
+        int[] tris = new int[]
         {
             1, 4, 0,
             5, 4, 1,
@@ -202,6 +224,17 @@ public class Buildings : MonoBehaviour
             5, 7, 6,
             6, 4, 5
         };
+
+        if (right)
+        {
+            mesh.triangles = tris;
+        }
+        else
+        {
+            Array.Reverse(tris);
+            mesh.triangles = tris;
+        }
+
         mesh.RecalculateNormals();
 
         mf.mesh = mesh;
@@ -211,19 +244,22 @@ public class Buildings : MonoBehaviour
         mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 
         //debug lines
-        Debug.DrawLine(basePoints.br, basePoints.bl, Color.cyan, float.MaxValue);
-        Debug.DrawLine(basePoints.bl, basePoints.tl, Color.cyan, float.MaxValue);
-        Debug.DrawLine(basePoints.tl, basePoints.tr, Color.cyan, float.MaxValue);
-        Debug.DrawLine(basePoints.tr, basePoints.br, Color.cyan, float.MaxValue);
+        if (debugLines)
+        {
+            Debug.DrawLine(basePoints.br, basePoints.bl, Color.cyan, float.MaxValue);
+            Debug.DrawLine(basePoints.bl, basePoints.tl, Color.cyan, float.MaxValue);
+            Debug.DrawLine(basePoints.tl, basePoints.tr, Color.cyan, float.MaxValue);
+            Debug.DrawLine(basePoints.tr, basePoints.br, Color.cyan, float.MaxValue);
 
-        Debug.DrawLine(topPoints.br, topPoints.bl, Color.cyan, float.MaxValue);
-        Debug.DrawLine(topPoints.bl, topPoints.tl, Color.cyan, float.MaxValue);
-        Debug.DrawLine(topPoints.tl, topPoints.tr, Color.cyan, float.MaxValue);
-        Debug.DrawLine(topPoints.tr, topPoints.br, Color.cyan, float.MaxValue);
+            Debug.DrawLine(topPoints.br, topPoints.bl, Color.cyan, float.MaxValue);
+            Debug.DrawLine(topPoints.bl, topPoints.tl, Color.cyan, float.MaxValue);
+            Debug.DrawLine(topPoints.tl, topPoints.tr, Color.cyan, float.MaxValue);
+            Debug.DrawLine(topPoints.tr, topPoints.br, Color.cyan, float.MaxValue);
 
-        Debug.DrawLine(basePoints.br, topPoints.br, Color.cyan, float.MaxValue);
-        Debug.DrawLine(basePoints.bl, topPoints.bl, Color.cyan, float.MaxValue);
-        Debug.DrawLine(basePoints.tl, topPoints.tl, Color.cyan, float.MaxValue);
-        Debug.DrawLine(basePoints.tr, topPoints.tr, Color.cyan, float.MaxValue);
+            Debug.DrawLine(basePoints.br, topPoints.br, Color.cyan, float.MaxValue);
+            Debug.DrawLine(basePoints.bl, topPoints.bl, Color.cyan, float.MaxValue);
+            Debug.DrawLine(basePoints.tl, topPoints.tl, Color.cyan, float.MaxValue);
+            Debug.DrawLine(basePoints.tr, topPoints.tr, Color.cyan, float.MaxValue);
+        }
     }
 }

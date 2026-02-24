@@ -384,10 +384,10 @@ MonoBehaviour:
   roadMaterial: {fileID: 2100000, guid: cc05ebaad29d1dfdd93b4f27c438cc4c, type: 2}
   segmentLength: 1
   roadWidth: 6
-  noiseScale: 600
-  heightMultiplier: 1
+  noiseScale: 100
+  heightMultiplier: 20
   turnChance: 15
-  maxTurnAngle: 90
+  maxTurnAngle: 45
   curveSmoothness: 0.2
   segmentsAhead: 500
   segmentsBehind: 100
@@ -411,7 +411,7 @@ MonoBehaviour:
   maxDist: 30
   minBreadth: 1
   widthRange: {x: 5, y: 25}
-  spaceRange: {x: 2, y: 15}
+  spaceRange: {x: 1, y: 2}
   heightRange: {x: 5, y: 25}
   buildingGap: 1
   buildingParent: {fileID: 0}
