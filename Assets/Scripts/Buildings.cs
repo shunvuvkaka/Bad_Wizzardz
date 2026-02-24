@@ -8,6 +8,7 @@ public class Buildings : MonoBehaviour
     public float roadDist;
     public float maxDist;
     public float minBreadth;
+    public int generations;
     [Header("Building Size and Spacing")]
     public Vector2Int widthRange;
     public Vector2Int spaceRange;
@@ -19,11 +20,14 @@ public class Buildings : MonoBehaviour
     public bool debugLines;
     private Dictionary<int, Vector3> points;
     private Dictionary<int, Vector3> normals;
+    [SerializeField] private List<BuildPoints> rBuilds = new List<BuildPoints>();
+    [SerializeField] private List<BuildPoints> lBuilds = new List<BuildPoints>();
     private Road road;
     private int rIndex = 0;
     private int lIndex = 0;
     private int endBuffer;
     private Color impoactCol;
+    private int currGen;
 
     void Start()
     {
@@ -46,6 +50,18 @@ public class Buildings : MonoBehaviour
         {
             InitialBuildings(ref lIndex, false);
         }
+
+        if (rBuilds.Count > 0)
+        {
+            while (currGen < generations)
+            {
+                currGen++;
+                GenerativeBuildings(ref rBuilds, true);
+                GenerativeBuildings(ref lBuilds, false);
+            }
+        }
+
+        currGen = 0;
         
     }
     void InitialBuildings(ref int index, bool right)
@@ -101,7 +117,44 @@ public class Buildings : MonoBehaviour
         index = index + width + space;
     }
 
-    
+    void GenerativeBuildings(ref List<BuildPoints> prevBuilds, bool right)
+    {
+        BuildPoints[] builds = new BuildPoints[prevBuilds.Count];
+        prevBuilds.CopyTo(builds);
+        prevBuilds.Clear();
+
+        foreach (BuildPoints build in builds)
+        {
+            float height = UnityEngine.Random.Range(heightRange.x, heightRange.y);
+
+            //calulating farthest edge distance
+            float backDist = CalculateDistance(build);
+            
+            
+            if (backDist - buildingGap < minBreadth)
+            {
+                continue;
+            }
+            
+
+            //creating points that will be converted to mesh
+            BasePoints basePoints = new BasePoints
+            (
+                build.fp + build.fn * backDist,
+                build.lp + build.ln * backDist,
+                build.fp + build.fn * buildingGap,
+                build.lp + build.ln * buildingGap
+            );
+
+            if (debugLines)
+            {
+                Debug.DrawRay(build.fp, build.fn * backDist, impoactCol, float.MaxValue);
+                Debug.DrawRay(build.lp, build.ln * backDist, impoactCol, float.MaxValue);
+            }
+
+            ConstructBuilding(basePoints, height, right);
+        }
+    }
 
     float CalculateDistance(BuildPoints build)
     {
@@ -127,7 +180,7 @@ public class Buildings : MonoBehaviour
         float rxs = r.x * s.y - r.y * s.x;
 
         //parrallel case
-        if (Mathf.Abs(rxs) < 0.0001f)
+        if (Mathf.Abs(rxs) < 0.01f)
             return maxDist + roadDist;
 
         Vector2 qp = q - p;
@@ -177,12 +230,18 @@ public class Buildings : MonoBehaviour
         Physics.Raycast(build.fp, build.fn, out pHit, maxDist + roadDist);
         Physics.Raycast(build.lp, build.ln, out qHit, maxDist + roadDist);
 
+        float min;
+
         if (pHit.collider == null && qHit.collider == null)
             return maxDist + roadDist;
+        else if (pHit.collider == null)
+            min = qHit.distance;
+        else if (qHit.collider == null)
+            min = pHit.distance;
+        else
+            min = Mathf.Min(pHit.distance, qHit.distance);
 
         impoactCol = Color.red;
-
-        float min = Mathf.Min(pHit.distance, qHit.distance);
 
         return min - buildingGap;
     }
@@ -236,6 +295,28 @@ public class Buildings : MonoBehaviour
         }
 
         mesh.RecalculateNormals();
+
+        Vector3 normal = Vector3.Cross(mesh.vertices[4] - mesh.vertices[6], mesh.vertices[0] - mesh.vertices[6]).normalized;
+
+        if (currGen < generations)
+        {
+
+            if (right)
+                normal *= -1;
+
+            BuildPoints bp = new BuildPoints
+            {
+                fp = mesh.vertices[0],
+                lp = mesh.vertices[2],
+                fn = normal,
+                ln = normal
+            };
+
+            if (right)
+                rBuilds.Add(bp);
+            else
+                lBuilds.Add(bp);
+        }
 
         mf.mesh = mesh;
         mc.sharedMesh = mesh;
