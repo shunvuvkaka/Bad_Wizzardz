@@ -8,6 +8,7 @@ public class Buildings : MonoBehaviour
     public float roadDist;
     public float maxDist;
     public float minBreadth;
+    public Material buildingMat;
     public int generations;
     [Header("Building Size and Spacing")]
     public Vector2Int widthRange;
@@ -267,36 +268,83 @@ public class Buildings : MonoBehaviour
 
         //oh boy we love some manually winded tris
 
-        mesh.vertices = new Vector3[]{basePoints.br, basePoints.bl, basePoints.tr, basePoints.tl, 
-                                      topPoints.br, topPoints.bl, topPoints.tr, topPoints.tl};
-        
-        int[] tris = new int[]
+        Vector3[] vertices = new Vector3[]
         {
-            1, 4, 0,
-            5, 4, 1,
-            5, 1, 3,
-            7, 5, 3,
-            7, 3, 2,
-            2, 6, 7,
-            0, 4, 6,
-            6, 2, 0,
-            5, 7, 6,
-            6, 4, 5
+            //bottom
+            basePoints.br, //0
+            basePoints.bl, //1
+            basePoints.tl, //2
+            basePoints.tr, //3
+
+            //top
+            topPoints.br,  //4
+            topPoints.bl,  //5
+            topPoints.tl,  //6
+            topPoints.tr,  //7
+
+            //front
+            basePoints.bl, //8
+            basePoints.br, //9
+            topPoints.br,  //10
+            topPoints.bl,  //11
+
+            //back
+            basePoints.tr, //12
+            basePoints.tl, //13
+            topPoints.tl,  //14
+            topPoints.tr,  //15
+
+            //left
+            basePoints.tl, //16
+            basePoints.bl, //17
+            topPoints.bl,  //18
+            topPoints.tl,  //19
+
+            //right
+            basePoints.br, //20
+            basePoints.tr, //21
+            topPoints.tr,  //22
+            topPoints.br   //23
+        };
+
+        int[] triangles = new int[]
+        {
+            //bottom
+            0,1,2,
+            0,2,3,
+            //top
+            4,6,5,
+            4,7,6,
+            //front
+            8,9,10,
+            8,10,11,
+            //back
+            12,13,14,
+            12,14,15,
+            //left
+            16,17,18,
+            16,18,19,
+            //right
+            20,21,22,
+            20,22,23
         };
 
         if (right)
         {
-            mesh.triangles = tris;
-        }
-        else
-        {
-            Array.Reverse(tris);
-            mesh.triangles = tris;
+            for (int i = 0; i < triangles.Length; i += 3)
+            {
+                int temp = triangles[i];
+                triangles[i] = triangles[i + 1];
+                triangles[i + 1] = temp;
+            }
         }
 
+        mesh.vertices = vertices;
+        mesh.triangles = triangles;
         mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
 
-        Vector3 normal = Vector3.Cross(mesh.vertices[4] - mesh.vertices[6], mesh.vertices[0] - mesh.vertices[6]).normalized;
+        Vector3 normal = Vector3.Cross(mesh.vertices[21] - mesh.vertices[20], mesh.vertices[22] - mesh.vertices[20]).normalized;
 
         if (currGen < generations)
         {
@@ -306,8 +354,8 @@ public class Buildings : MonoBehaviour
 
             BuildPoints bp = new BuildPoints
             {
-                fp = mesh.vertices[0],
-                lp = mesh.vertices[2],
+                fp = mesh.vertices[20],
+                lp = mesh.vertices[21],
                 fn = normal,
                 ln = normal
             };
@@ -321,7 +369,7 @@ public class Buildings : MonoBehaviour
         mf.mesh = mesh;
         mc.sharedMesh = mesh;
 
-        mr.material = road.roadMaterial;
+        mr.material = buildingMat;
         mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 
         //debug lines
