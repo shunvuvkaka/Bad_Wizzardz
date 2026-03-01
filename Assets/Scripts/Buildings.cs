@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Buildings : MonoBehaviour
@@ -24,6 +25,8 @@ public class Buildings : MonoBehaviour
     private Dictionary<int, Vector3> normals;
     [SerializeField] private List<BuildPoints> rBuilds = new List<BuildPoints>();
     [SerializeField] private List<BuildPoints> lBuilds = new List<BuildPoints>();
+    private List<BasePoints> rRoofPoints = new List<BasePoints>();
+    private List<BasePoints> lRoofPoints = new List<BasePoints>();
     private Road road;
     private int rIndex = 0;
     private int lIndex = 0;
@@ -33,7 +36,7 @@ public class Buildings : MonoBehaviour
 
     void Start()
     {
-        //first preperatuins and referneces
+        //first preperations and referneces
         endBuffer = widthRange.y + spaceRange.y + 1;
         road = Road.Instance;
         roadDist += road.roadWidth / 2;
@@ -73,7 +76,12 @@ public class Buildings : MonoBehaviour
 
         //reset generation for next frame
         currGen = 0;
-        
+
+        if (rRoofPoints.Count != 0)
+            Roofs.Instance.CreateRoofs(ref rRoofPoints, true);
+
+        if (lRoofPoints.Count != 0)
+            Roofs.Instance.CreateRoofs(ref lRoofPoints, false);
     }
     void InitialBuildings(ref int index, bool right)
     {
@@ -340,6 +348,12 @@ public class Buildings : MonoBehaviour
             basePoints.bl + (Vector3.up * height),
             basePoints.tl + (Vector3.up * height)
         );
+
+        //adds the top points to list for roof to use
+        if (right)
+            rRoofPoints.Add(topPoints);
+        else
+            lRoofPoints.Add(topPoints);
         
         //creating a new gameobject for each building
         GameObject go = new GameObject($" Building {rIndex}");

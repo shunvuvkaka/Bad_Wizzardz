@@ -15,21 +15,17 @@ public class Road : MonoBehaviour
 
     [Header("Road Settings")]
     public Material roadMaterial;
-    public int segmentLength = 10;
+    public int segmentLength = 1;
     public float roadWidth = 6f;
 
-    [Header("Terrain Settings")]
-    public float noiseScale = 600;
-    public float heightMultiplier = 1f;
-
     [Header("Turning Logic")]
-    public float turnChance = 0.2f;
-    public float maxTurnAngle = 20f;
-    public float curveSmoothness = 0.1f;
+    public float turnChance = 0.15f;
+    public float maxTurnAngle = 45f;
+    public float curveSmoothness = 0.2f;
 
     [Header("Render Distance")]
-    public int segmentsAhead = 25;
-    public int segmentsBehind = 5;
+    public int segmentsAhead = 500;
+    public int segmentsBehind = 100;
     public static event Action onGenerate;
     public static Road Instance;
 
@@ -47,6 +43,8 @@ public class Road : MonoBehaviour
     private int roadIndexOffset = 0;
     public int neededPoints;
     public int globalIndex = 0;
+
+    private float tall;
 
     //driving backwards is screwed dont try please :pray :pray
 
@@ -120,10 +118,11 @@ public class Road : MonoBehaviour
         Vector3 direction = Quaternion.Euler(0, currentAngle, 0) * Vector3.forward;
         Vector3 nextPoint = lastPoint + direction * segmentLength;
 
-        //uses p noise
-        float height = 1f;
+        //TODO
+        //float height = tall;
+        tall++;
 
-        nextPoint.y = height;
+        nextPoint.y = 1;
 
         roadPoints.Add(nextPoint);
         onGenerate?.Invoke();
