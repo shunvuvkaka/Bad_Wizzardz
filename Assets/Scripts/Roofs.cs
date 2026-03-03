@@ -10,7 +10,10 @@ public class Roofs : MonoBehaviour
     public float spacing;
     public Transform roofParent;
     public Material roofMat;
+    public float maxHeight;
     public static Roofs Instance;
+    [HideInInspector] public Dictionary<Vector2, GameObject> roofs = new Dictionary<Vector2, GameObject>();
+
 
     public void Awake()
     {
@@ -79,7 +82,8 @@ public class Roofs : MonoBehaviour
             spacing = spacing,
             vertices = allVertices,
             triangles = allTriangles,
-            right = right
+            right = right,
+            maxHeight = maxHeight
         };
 
         JobHandle handle = job.Schedule(roofCount, 32);
@@ -108,6 +112,8 @@ public class Roofs : MonoBehaviour
             for (int t = 0; t < range.triangleCount; t++)
                 tris[t] = allTriangles[range.triangleStart + t] - range.vertexStart;
 
+            roofs.Add(new Vector2(verts[0].x, verts[0].z), go);
+
             mesh.vertices = verts;
             mesh.triangles = tris;
             mesh.RecalculateNormals();
@@ -118,7 +124,7 @@ public class Roofs : MonoBehaviour
             mc.sharedMesh = mesh;
         }
 
-        // Cleanup
+        //cleanup
         jobPoints.Dispose();
         ranges.Dispose();
         allVertices.Dispose();
@@ -134,6 +140,7 @@ public class Roofs : MonoBehaviour
         [ReadOnly] public NativeArray<MeshRange> ranges;
         [ReadOnly] public float spacing;
         [ReadOnly] public bool right;
+        [ReadOnly] public float maxHeight;
         [NativeDisableParallelForRestriction] public NativeArray<float3> vertices;
         [NativeDisableParallelForRestriction] public NativeArray<int> triangles;
         public void Execute(int index)
@@ -223,6 +230,9 @@ public class Roofs : MonoBehaviour
                 xHeight = xCount - x;
             else
                 xHeight = x;
+            
+            xHeight = math.clamp(xHeight, 0.01f, maxHeight);
+            zHeight = math.clamp(zHeight, 0.01f, maxHeight);
 
             return math.min(xHeight, zHeight);
         }

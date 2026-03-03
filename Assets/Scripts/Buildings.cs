@@ -18,7 +18,10 @@ public class Buildings : MonoBehaviour
     public float buildingGap = 2;
     public Vector2 generationScope = new Vector2(0.7f, -0.7f);
     [Header("References")]
+    public float removalDistance = 600;
+    [Header("References")]
     [SerializeField] private Transform buildingParent; //parent object buildings should be assigned to
+    [SerializeField] private Transform player;
 
     public bool debugLines;
     private Dictionary<int, Vector3> points;
@@ -27,6 +30,8 @@ public class Buildings : MonoBehaviour
     [SerializeField] private List<BuildPoints> lBuilds = new List<BuildPoints>();
     private List<BasePoints> rRoofPoints = new List<BasePoints>();
     private List<BasePoints> lRoofPoints = new List<BasePoints>();
+    private Dictionary<Vector2, GameObject> buildings = new Dictionary<Vector2, GameObject>();
+    private List<Vector2> toRemove = new List<Vector2>();
     private Road road;
     private int rIndex = 0;
     private int lIndex = 0;
@@ -34,12 +39,17 @@ public class Buildings : MonoBehaviour
     private Color impoactCol;
     private int currGen;
 
-    void Start()
+    void Awake()
     {
         //first preperations and referneces
         endBuffer = widthRange.y + spaceRange.y + 1;
         road = Road.Instance;
+        Road.onGenerate += RemoveBuildings;
         roadDist += road.roadWidth / 2;
+    }
+    void OnDestroy()
+    {
+        Road.onGenerate -= RemoveBuildings;
     }
 
     void LateUpdate()
@@ -82,6 +92,34 @@ public class Buildings : MonoBehaviour
 
         if (lRoofPoints.Count != 0)
             Roofs.Instance.CreateRoofs(ref lRoofPoints, false);
+    }
+
+    void RemoveBuildings()
+    {
+        foreach(var kvp in buildings)
+        {
+            if (Vector2.Distance(kvp.Key, new Vector2(player.position.x, player.position.z)) > removalDistance)
+            {
+                Destroy(kvp.Value);
+                toRemove.Add(kvp.Key);
+            }
+        }
+
+        foreach(var kvp in Roofs.Instance.roofs)
+        {
+            if (Vector2.Distance(kvp.Key, new Vector2(player.position.x, player.position.z)) > removalDistance)
+            {
+                Destroy(kvp.Value);
+            }
+        }
+
+        foreach(Vector2 key in toRemove)
+        {
+            buildings.Remove(key);
+            Roofs.Instance.roofs.Remove(key);
+        }
+
+        toRemove.Clear();
     }
     void InitialBuildings(ref int index, bool right)
     {
@@ -179,10 +217,7 @@ public class Buildings : MonoBehaviour
 
                 //continue to next search attempt if building is guaranteed to be invalid
                 if (dist - buildingGap < minBreadth)
-                {
-                    Debug.Log(i + " too high " + dist);
                     continue;
-                }
 
                 //calculating area of trapezium created from current values
                 Vector3 q = build.fp + build.fn * dist;
@@ -356,7 +391,10 @@ public class Buildings : MonoBehaviour
             lRoofPoints.Add(topPoints);
         
         //creating a new gameobject for each building
-        GameObject go = new GameObject($" Building {rIndex}");
+        int index = right? rIndex : lIndex;
+        GameObject go = new GameObject($" Building {index}");
+        buildings.Add(new Vector2(basePoints.br.x, basePoints.br.z), go);
+
         go.transform.parent = buildingParent;
 
         //adding components neccessary for collision and mesh rendering

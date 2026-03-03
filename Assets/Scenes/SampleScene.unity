@@ -331,8 +331,7 @@ Transform:
   m_LocalPosition: {x: 49.93061, y: 0, z: 48.00194}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1274426298}
+  m_Children: []
   m_Father: {fileID: 359941766}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &359941765
@@ -367,6 +366,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1274426298}
   - {fileID: 357383559}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -386,7 +386,7 @@ MonoBehaviour:
   roadMaterial: {fileID: 2100000, guid: cc05ebaad29d1dfdd93b4f27c438cc4c, type: 2}
   segmentLength: 1
   roadWidth: 6
-  turnChance: 0
+  turnChance: 15
   maxTurnAngle: 45
   curveSmoothness: 0.2
   segmentsAhead: 500
@@ -412,12 +412,14 @@ MonoBehaviour:
   minBreadth: 5
   buildingMat: {fileID: 2100000, guid: 0de4e270a0d7ff4ae8ff872f53d0cf4d, type: 2}
   widthRange: {x: 5, y: 25}
-  spaceRange: {x: 1, y: 2}
+  spaceRange: {x: 1, y: 5}
   heightRange: {x: 20, y: 40}
-  generations: 5
+  generations: 1
   buildingGap: 2
   generationScope: {x: 0.7, y: -0.7}
+  removalDistance: 600
   buildingParent: {fileID: 357383559}
+  player: {fileID: 1911483210}
   debugLines: 0
   rBuilds: []
   lBuilds: []
@@ -435,7 +437,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Roofs
   spacing: 1
   roofParent: {fileID: 1274426298}
-  roofMat: {fileID: 2100000, guid: cc05ebaad29d1dfdd93b4f27c438cc4c, type: 2}
+  roofMat: {fileID: 2100000, guid: 252d36c98e7f8a6aaa6ba0fdff2170a3, type: 2}
+  maxHeight: 3
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -588,11 +591,11 @@ Transform:
   m_GameObject: {fileID: 1274426297}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -49.93061, y: 0, z: -48.00194}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 357383559}
+  m_Father: {fileID: 359941766}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1911483206
 GameObject:

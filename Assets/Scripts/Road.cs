@@ -112,6 +112,7 @@ public class Road : MonoBehaviour
         {
             float turn = UnityEngine.Random.Range(-maxTurnAngle, maxTurnAngle);
             currentAngle = Mathf.Lerp(currentAngle, currentAngle + turn, curveSmoothness);
+            currentAngle = Mathf.Clamp(currentAngle, -90, 90);
         }
 
         //direction in world space
@@ -119,10 +120,10 @@ public class Road : MonoBehaviour
         Vector3 nextPoint = lastPoint + direction * segmentLength;
 
         //TODO
-        //float height = tall;
+        float height = 1;
         tall++;
 
-        nextPoint.y = 1;
+        nextPoint.y = height;
 
         roadPoints.Add(nextPoint);
         onGenerate?.Invoke();
