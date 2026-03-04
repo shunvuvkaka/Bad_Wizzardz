@@ -46,7 +46,7 @@ public class Road : MonoBehaviour
 
     private float tall;
 
-    //driving backwards is screwed dont try please :pray :pray
+    //going backwards is screwed dont try please :pray :pray
 
     void Awake()
     {
@@ -120,7 +120,7 @@ public class Road : MonoBehaviour
         Vector3 nextPoint = lastPoint + direction * segmentLength;
 
         //TODO
-        float height = 1;
+        float height = 1.05f;
         tall++;
 
         nextPoint.y = height;

@@ -149,8 +149,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Pool
   proceduralRoad: {fileID: 359941767}
+  terrainGenerator: {fileID: 359941770}
   roadPrefab: {fileID: 5975383585194910617, guid: b9a9d676682015ccfad2eb7c192356a8, type: 3}
+  terrainPrefab: {fileID: 5975383585194910617, guid: 8fd3fadfc5b35abac94a4b0100135414, type: 3}
   pooledRoad: []
+  pooledTerrain: []
 --- !u!4 &143871931
 Transform:
   m_ObjectHideFlags: 0
@@ -346,6 +349,7 @@ GameObject:
   - component: {fileID: 359941767}
   - component: {fileID: 359941768}
   - component: {fileID: 359941769}
+  - component: {fileID: 359941770}
   m_Layer: 0
   m_Name: Mesh Generator
   m_TagString: Untagged
@@ -414,7 +418,7 @@ MonoBehaviour:
   widthRange: {x: 5, y: 25}
   spaceRange: {x: 1, y: 5}
   heightRange: {x: 20, y: 40}
-  generations: 1
+  generations: 5
   buildingGap: 2
   generationScope: {x: 0.7, y: -0.7}
   removalDistance: 600
@@ -439,6 +443,25 @@ MonoBehaviour:
   roofParent: {fileID: 1274426298}
   roofMat: {fileID: 2100000, guid: 252d36c98e7f8a6aaa6ba0fdff2170a3, type: 2}
   maxHeight: 3
+--- !u!114 &359941770
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 359941765}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9b3237f1638e3e2d869cd2f9a721752, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TerrainGenerator
+  player: {fileID: 1911483210}
+  viewDistance: 15
+  chunkSize: 16
+  height: 1
+  chunkMaterial: {fileID: 2100000, guid: a5e965b249263a3bb9f3103831dcefd9, type: 2}
+  targetFPS: 120
+  budget: 0
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
