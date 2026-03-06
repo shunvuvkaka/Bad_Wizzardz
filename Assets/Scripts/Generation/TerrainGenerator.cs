@@ -22,7 +22,6 @@ public class TerrainGenerator : MonoBehaviour
     private Queue<Vector2Int> chunksToGenerate = new Queue<Vector2Int>();
     private HashSet<Vector2Int> updatedChunks;
     private List<Vector2Int> toRemove;
-    static readonly List<Vector3> roadPointsBuffer = new List<Vector3>();
     private HashSet<Vector2Int> queuedChunks;
     private bool isQuiting;
     private List<Vector2Int> candidateChunks = new List<Vector2Int>();
@@ -108,6 +107,10 @@ public class TerrainGenerator : MonoBehaviour
             if (!updatedChunks.Contains(kvp.Key))
             {
                 kvp.Value.SetActive(false);
+
+                for (int i = kvp.Value.transform.childCount - 1; i >= 0; i--)
+                    Destroy(kvp.Value.transform.GetChild(i).gameObject);
+
                 toRemove.Add(kvp.Key);
             }
         }
@@ -181,6 +184,7 @@ public class TerrainGenerator : MonoBehaviour
 
         MeshRenderer mr = chunk.GetComponent<MeshRenderer>();
         MeshFilter mf = chunk.GetComponent<MeshFilter>();
+        MeshCollider mc = chunk.GetComponent<MeshCollider>();
         mr.material = chunkMaterial;
 
         Mesh mesh = new Mesh();
@@ -189,7 +193,15 @@ public class TerrainGenerator : MonoBehaviour
         mesh.triangles = data.triangles;
         mesh.RecalculateNormals();
 
+        Vector3[] points = new Vector3[data.vertices.Length];
+
+        for (int i = 0; i < data.vertices.Length; i++)
+            points[i] = data.vertices[i] + chunk.transform.position;
+
+        PlacementPoints.Instance.Propify(points, chunk.transform, true);
+
         mf.mesh = mesh;
+        mc.sharedMesh = mesh;
         activeChunks[coord] = chunk;
     }
 

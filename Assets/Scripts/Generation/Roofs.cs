@@ -96,6 +96,7 @@ public class Roofs : MonoBehaviour
 
             GameObject go = new GameObject("Roof");
             go.transform.parent = roofParent;
+            go.layer = 6;
 
             MeshFilter mf = go.AddComponent<MeshFilter>();
             MeshRenderer mr = go.AddComponent<MeshRenderer>();
@@ -119,9 +120,12 @@ public class Roofs : MonoBehaviour
             mesh.RecalculateNormals();
             mesh.RecalculateBounds();
 
+            PlacementPoints.Instance.Propify(verts, go.transform, false);
+
             mf.mesh = mesh;
             mr.material = roofMat;
             mc.sharedMesh = mesh;
+            mc.convex = true;
         }
 
         //cleanup

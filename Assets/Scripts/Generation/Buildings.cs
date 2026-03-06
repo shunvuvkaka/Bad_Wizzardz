@@ -514,6 +514,7 @@ public class Buildings : MonoBehaviour
         //assign values to components
         mf.mesh = mesh;
         mc.sharedMesh = mesh;
+        mc.convex = true;
 
         mr.material = buildingMat;
         //turn off shadows

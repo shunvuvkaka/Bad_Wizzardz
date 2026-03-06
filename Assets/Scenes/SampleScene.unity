@@ -350,6 +350,7 @@ GameObject:
   - component: {fileID: 359941768}
   - component: {fileID: 359941769}
   - component: {fileID: 359941770}
+  - component: {fileID: 359941771}
   m_Layer: 0
   m_Name: Mesh Generator
   m_TagString: Untagged
@@ -417,7 +418,7 @@ MonoBehaviour:
   buildingMat: {fileID: 2100000, guid: 0de4e270a0d7ff4ae8ff872f53d0cf4d, type: 2}
   widthRange: {x: 5, y: 25}
   spaceRange: {x: 1, y: 5}
-  heightRange: {x: 20, y: 40}
+  heightRange: {x: 5, y: 30}
   generations: 5
   buildingGap: 2
   generationScope: {x: 0.7, y: -0.7}
@@ -462,6 +463,27 @@ MonoBehaviour:
   chunkMaterial: {fileID: 2100000, guid: a5e965b249263a3bb9f3103831dcefd9, type: 2}
   targetFPS: 120
   budget: 0
+--- !u!114 &359941771
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 359941765}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f18cb331f0bc546382ee11e1417099a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlacementPoints
+  terrainProps:
+  - {fileID: 355292232323109667, guid: f584202456b18877283eb66a1383a19f, type: 3}
+  roofProps:
+  - {fileID: 355292232323109667, guid: f584202456b18877283eb66a1383a19f, type: 3}
+  terrainChance: 0.01
+  roofChance: 0.005
+  minSpacing: 2
+  terrainLayer: 3
+  roofLayer: 6
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
