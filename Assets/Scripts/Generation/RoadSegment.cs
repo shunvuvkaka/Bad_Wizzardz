@@ -35,7 +35,10 @@ public class RoadSegment : MonoBehaviour
         mesh.RecalculateNormals();
 
         if (mc != null)
+        {
             mc.sharedMesh = mesh;
+            //mc.convex = true;
+        }
 
         GetComponent<MeshRenderer>().material = mat;
         GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
