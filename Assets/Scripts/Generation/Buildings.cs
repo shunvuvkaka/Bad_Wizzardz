@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class Buildings : MonoBehaviour
@@ -17,12 +16,13 @@ public class Buildings : MonoBehaviour
     public int generations = 5;
     public float buildingGap = 2;
     public Vector2 generationScope = new Vector2(0.7f, -0.7f);
-    [Header("References")]
+    [Header("Removal")]
     public float removalDistance = 600;
     [Header("References")]
     [SerializeField] private Transform buildingParent; //parent object buildings should be assigned to
     [SerializeField] private Transform player;
 
+    public static Buildings Instance;
     public bool debugLines;
     private Dictionary<int, Vector3> points;
     private Dictionary<int, Vector3> normals;
@@ -42,6 +42,7 @@ public class Buildings : MonoBehaviour
     void Awake()
     {
         //first preperations and referneces
+        Instance = this;
         endBuffer = widthRange.y + spaceRange.y + 1;
         road = Road.Instance;
         Road.onGenerate += RemoveBuildings;

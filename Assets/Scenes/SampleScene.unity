@@ -414,14 +414,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Buildings
   roadDist: 1
   maxDist: 30
-  minBreadth: 5
+  minBreadth: 10
   buildingMat: {fileID: 2100000, guid: 0de4e270a0d7ff4ae8ff872f53d0cf4d, type: 2}
   widthRange: {x: 5, y: 25}
   spaceRange: {x: 1, y: 5}
   heightRange: {x: 5, y: 30}
   generations: 5
   buildingGap: 2
-  generationScope: {x: 0.7, y: -0.7}
+  generationScope: {x: 0.3, y: -0.3}
   removalDistance: 600
   buildingParent: {fileID: 357383559}
   player: {fileID: 1911483210}
@@ -484,6 +484,14 @@ MonoBehaviour:
   minSpacing: 2
   terrainLayer: 3
   roofLayer: 6
+  minDist: 20
+  groundMaxDist: 250
+  roofMaxDist: 610
+  frequency: 200
+  debugLines: 1
+  reccomendedDistances: 0
+  terrainSpanws: []
+  roofSpawns: []
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0

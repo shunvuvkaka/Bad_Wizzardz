@@ -120,7 +120,7 @@ public class Road : MonoBehaviour
         Vector3 nextPoint = lastPoint + direction * segmentLength;
 
         //TODO
-        float height = 1.05f;
+        float height = 1.1f;
         tall++;
 
         nextPoint.y = height;

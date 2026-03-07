@@ -5,6 +5,7 @@ using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
 using System.Diagnostics;
+using System;
 
 public class TerrainGenerator : MonoBehaviour
 {
@@ -26,6 +27,8 @@ public class TerrainGenerator : MonoBehaviour
     private bool isQuiting;
     private List<Vector2Int> candidateChunks = new List<Vector2Int>();
     private Stopwatch stopwatch= new Stopwatch();
+    public static Action onGenerate;
+    public static TerrainGenerator Instance;
     [SerializeField] private float targetFPS = 120f;
     [SerializeField] private float budget;
 
@@ -82,6 +85,7 @@ public class TerrainGenerator : MonoBehaviour
 
                 if (!activeChunks.ContainsKey(coord) && !chunksBeingGenerated.Contains(coord) && !queuedChunks.Contains(coord))
                 {
+                    onGenerate?.Invoke();
                     candidateChunks.Add(coord);
                 }
             }

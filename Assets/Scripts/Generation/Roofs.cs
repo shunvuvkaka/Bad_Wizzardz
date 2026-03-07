@@ -37,11 +37,12 @@ public class Roofs : MonoBehaviour
 
             var p = points[i];
 
-            float zDist = math.distance(p.bl, p.tl);
+            float lzDist = math.distance(p.bl, p.tl);
+            float rzDist = math.distance(p.br, p.tr);
             float xDist = math.distance(p.bl, p.br);
 
             int xCount = (int)math.floor(xDist / spacing);
-            int zCount = (int)math.floor(zDist / spacing);
+            int zCount = math.max((int)math.floor(lzDist / spacing), (int)math.floor(rzDist / spacing));
 
             float lSpacing = math.distance(p.bl, p.tl) / zCount;
             float rSpacing = math.distance(p.br, p.tr) / zCount;
