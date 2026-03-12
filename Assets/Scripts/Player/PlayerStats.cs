@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class PlayerStats : MonoBehaviour
 {
+    public static PlayerStats Instance;
     public float Health;
     public float MaxHealth;
     public float Damage;
@@ -15,6 +16,9 @@ public class PlayerStats : MonoBehaviour
         Health = MaxHealth;
         Speed = MaxSpeed;
         Mana = MaxMana;
-
+    }
+    void Awake()
+    {
+        Instance = this;
     }
 }

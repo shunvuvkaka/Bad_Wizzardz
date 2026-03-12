@@ -15,6 +15,7 @@ public class Road : MonoBehaviour
 
     [Header("Road Settings")]
     public Material roadMaterial;
+    public PhysicsMaterial roadPhysics;
     public int segmentLength = 1;
     public float roadWidth = 6f;
 
@@ -220,7 +221,7 @@ public class Road : MonoBehaviour
         Vector3 rightB = b + normalB;
         Vector3 direction = (b - a).normalized;
 
-        segment.ApplyMesh(leftA, rightA, leftB, rightB, roadMaterial);
+        segment.ApplyMesh(leftA, rightA, leftB, rightB, roadMaterial, roadPhysics);
         
         go.SetActive(true);
 

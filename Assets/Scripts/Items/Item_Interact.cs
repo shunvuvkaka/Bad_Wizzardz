@@ -12,9 +12,9 @@ public class Item_Interact : MonoBehaviour
     public PlayerStats Stats;
     public Transform Potion;
 
-    private void Start()
+    void Awake()
     {
-       Stats = GameObject.Find("Player").GetComponent<PlayerStats>();
+       Stats = PlayerStats.Instance;
     }
     private void OnTriggerStay(Collider other)
     {

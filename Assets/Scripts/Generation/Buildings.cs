@@ -8,6 +8,7 @@ public class Buildings : MonoBehaviour
     public float maxDist = 30;
     public float minBreadth = 5;
     public Material buildingMat;
+    public PhysicsMaterial buildingPhysics;
     [Header("Building Size and Spacing")]
     public Vector2Int widthRange = new Vector2Int(5, 25);
     public Vector2Int spaceRange = new Vector2Int(1, 2);
@@ -515,6 +516,7 @@ public class Buildings : MonoBehaviour
         //assign values to components
         mf.mesh = mesh;
         mc.sharedMesh = mesh;
+        mc.material = buildingPhysics;
         mc.convex = true;
 
         mr.material = buildingMat;

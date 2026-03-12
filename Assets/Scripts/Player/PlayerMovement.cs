@@ -1,41 +1,112 @@
+using System;
 using UnityEngine;
 
-public class PlayerMovement : MonoBehaviour
+[RequireComponent(typeof(Rigidbody))]
+public class PlayerController : MonoBehaviour
 {
-    public float moveSpeed;
-    public Transform orientation;
+    private Rigidbody playerRB;
 
-    float horizontalInput;
-    float verticalInput;
+    public Transform playerTransform;   // player object
+    public Transform cameraTransform;   // main camera
 
-    Vector3 moveDirection;
+    public float shiftSpeed;
 
-    Rigidbody rb;
+    private Vector2 horizontalMovement;
+    private float verticalMovement;
+    public float velocityScaling = 10f;
+    public float jumpVelocity = 9.81f;
 
-    private void Start()
+    private bool isGrounded;
+
+    private bool isInvert = false;
+    private readonly KeyCode invertKey = KeyCode.Q;
+    private int direction = 1;
+
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    void Start()
     {
-        rb = GetComponent<Rigidbody>();
-        rb.freezeRotation = true;
+        playerRB = GetComponent<Rigidbody>();
+        playerTransform = GetComponent<Transform>();
+        cameraTransform = Camera.main.transform;
+        horizontalMovement = Vector2.zero;
     }
 
-    private void Update() 
+    // Update is called once per frame
+    private void Update()
     {
-        MyInput();
-    }
-    private void FixedUpdate()
-    {
-        MovePlayer();
+        horizontalMovement = CalculateHorizontalMovementVector();
+        isGrounded = Physics.Raycast(transform.position, Vector3.down, 1.1f);
+        verticalMovement = CalculateVerticalMovementVector();
     }
 
-    private void MyInput() 
+    // FixedUpdate is called every fixed amount of DeltaTime 
+    // Default: 20ms
+    void FixedUpdate()
     {
-        horizontalInput = Input.GetAxisRaw("Horizontal");
-        verticalInput = Input.GetAxisRaw("Vertical");
-    }
-    private void MovePlayer() 
-    {
-        moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
+        if(Input.GetKey(invertKey) && !isInvert)
+        {
+            playerTransform.Rotate(0f, 180f, 0f);
+            direction = -1;
+            isInvert = true;
+        }
+        else if (!Input.GetKey(invertKey) && isInvert)
+        {
+            playerTransform.Rotate(0f, 180f, 0f);
+            direction = 1;
+            isInvert = false;
+        }    
 
-        rb.AddForce(moveDirection.normalized * moveSpeed * 10f, ForceMode.Force);
+        
+        Vector3 velocity = playerRB.linearVelocity;
+
+        Vector3 forward = cameraTransform.forward;
+        forward.y = 0f;
+        forward.Normalize();
+
+        Vector3 right = cameraTransform.right;
+        right.y = 0f;
+        right.Normalize();
+       
+        Vector3 movement = direction * forward * horizontalMovement.y + direction * right * horizontalMovement.x;
+
+        velocity.x = movement.x;
+        velocity.z = movement.z;
+        velocity.y += verticalMovement;
+        
+        playerRB.linearVelocity = velocity;
+    }
+
+    /* 
+     * Function Calculates player movement vector in the x and z axis 
+     * Input: None 
+     * Ouput: 2d vector representing the velocity of the player in the x and z axis 
+     */
+    private Vector2 CalculateHorizontalMovementVector()
+    {
+        float xAxis = Input.GetAxisRaw("Horizontal");
+        float zAxis = Input.GetAxisRaw("Vertical");
+
+        bool shiftFlag = Input.GetKey(KeyCode.LeftShift);
+        float shiftScaling = shiftFlag ? shiftSpeed : 1f;
+
+        Vector2 res = new Vector2(xAxis, zAxis);
+
+        res.Normalize();
+        res *= velocityScaling * shiftScaling;
+        
+
+        return res;
+    }
+
+    /*
+     * Function calculates the vertical velocity of the player
+     * Input: None
+     * Output: float velocity
+     */
+    private float CalculateVerticalMovementVector()
+    {
+        if (Input.GetKey(KeyCode.Space) && isGrounded) { return jumpVelocity; }
+
+        return 0f;
     }
 }

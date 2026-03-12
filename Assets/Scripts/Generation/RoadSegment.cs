@@ -16,7 +16,7 @@ public class RoadSegment : MonoBehaviour
             mf.mesh = new Mesh();
     }
 
-    public void ApplyMesh(Vector3 leftA, Vector3 rightA, Vector3 leftB, Vector3 rightB, Material mat)
+    public void ApplyMesh(Vector3 leftA, Vector3 rightA, Vector3 leftB, Vector3 rightB, Material mat, PhysicsMaterial phys)
     {
         Mesh mesh = mf.mesh;
         mesh.Clear();
@@ -37,6 +37,7 @@ public class RoadSegment : MonoBehaviour
         if (mc != null)
         {
             mc.sharedMesh = mesh;
+            mc.material = phys;
             //mc.convex = true;
         }
 
