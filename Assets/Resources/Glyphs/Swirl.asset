@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c513af9b1e04f945b7619c5813802fb, type: 3}
   m_Name: Swirl
   m_EditorClassIdentifier: Assembly-CSharp::GlyphSO
-  minMatchPercent: 120
+  spell: {fileID: 11400000, guid: c57ce7b6ebf8155c786891fcb9492b1d, type: 2}
   points:
   - {x: 1252, y: 338}
   - {x: 1250, y: 333}

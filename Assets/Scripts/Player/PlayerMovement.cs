@@ -8,6 +8,7 @@ public class PlayerController : MonoBehaviour
 
     public Transform playerTransform;   // player object
     public Transform cameraTransform;   // main camera
+    public PlayerCamera cam;
 
     public float shiftSpeed;
 
@@ -37,6 +38,19 @@ public class PlayerController : MonoBehaviour
         horizontalMovement = CalculateHorizontalMovementVector();
         isGrounded = Physics.Raycast(transform.position, Vector3.down, 1.1f);
         verticalMovement = CalculateVerticalMovementVector();
+
+        if (Input.GetKeyDown(KeyCode.LeftControl))
+        {
+            Time.timeScale = 0.5f;
+            DrawGlyph.Instance.casting = true;
+            cam.casting = true;
+        }
+        if (Input.GetKeyUp(KeyCode.LeftControl))
+        {
+            Time.timeScale = 1f;
+            DrawGlyph.Instance.casting = false;
+            cam.casting = false;
+        }
     }
 
     // FixedUpdate is called every fixed amount of DeltaTime 
@@ -54,6 +68,24 @@ public class PlayerController : MonoBehaviour
             playerTransform.Rotate(0f, 180f, 0f);
             direction = 1;
             isInvert = false;
+        }
+
+        if (playerRB.linearVelocity.y < 0)
+        {
+            playerRB.AddForce(Physics.gravity * 4, ForceMode.Acceleration);
+        }
+        else
+        {
+            playerRB.AddForce(Physics.gravity * 1, ForceMode.Acceleration);
+        }
+
+        if (isGrounded)
+        {
+            playerRB.linearDamping = 4;
+        }
+        else
+        {
+            playerRB.linearDamping = 2;
         }    
 
         
@@ -67,13 +99,13 @@ public class PlayerController : MonoBehaviour
         right.y = 0f;
         right.Normalize();
        
-        Vector3 movement = direction * forward * horizontalMovement.y + direction * right * horizontalMovement.x;
+        Vector3 movement = direction * horizontalMovement.y * forward + direction * horizontalMovement.x * right;
 
         velocity.x = movement.x;
         velocity.z = movement.z;
-        velocity.y += verticalMovement;
+        velocity.y = verticalMovement;
         
-        playerRB.linearVelocity = velocity;
+        playerRB.AddForce(velocity, ForceMode.VelocityChange);
     }
 
     /* 

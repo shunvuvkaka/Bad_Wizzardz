@@ -1,3 +1,5 @@
 ﻿<Solution>
+  <Project Path="UnityUIExtensions.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
+  <Project Path="UnityUIExtensions.editor.csproj" />
 </Solution>

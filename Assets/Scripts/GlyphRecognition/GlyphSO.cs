@@ -8,11 +8,12 @@ using System;
 [CreateAssetMenu(fileName = "New Glyph", menuName = "Create Glyph")]
 public class GlyphSO : ScriptableObject
 {
-    [Range(0,200)] [Tooltip("Added match percent and key point percent")]
-    public float minMatchPercent = 120;
+    [Tooltip("Associated Spell")]
+    [SerializeField] public BaseSpell spell;
     [SerializeField] public Vector2[] points = new Vector2[0];
 }
 
+#if UNITY_EDITOR
 [CustomEditor(typeof(GlyphSO))]
 public class GlyphSOEditor : Editor
 {
@@ -33,10 +34,10 @@ public class GlyphSOEditor : Editor
         EditorGUILayout.EditorToolbar();
 
         SerializedObject so = new SerializedObject(target);
-        SerializedProperty minMatchProperty = so.FindProperty("minMatchPercent");
         SerializedProperty pointsProperty = so.FindProperty("points");
-        
-        EditorGUI.PropertyField(new Rect(10, 10, Screen.width-20, 20), minMatchProperty);
+        SerializedProperty spellProperty = so.FindProperty("spell");
+
+        EditorGUI.PropertyField(new Rect(10, 10, Screen.width-20, 20), spellProperty, true);
         EditorGUI.PropertyField(new Rect(10, 50, Screen.width-20, 100), pointsProperty, true);
 
         float height = EditorGUI.GetPropertyHeight(pointsProperty, true) + 50;
@@ -242,3 +243,4 @@ public class GlyphSOEditor : Editor
         DrawGlyph.Instance.RenderLine(glyphPoints);
     }
 }
+#endif

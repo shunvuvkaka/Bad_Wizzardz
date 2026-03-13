@@ -103,8 +103,8 @@ public class DollarRecognizer
 		public Vector2[] Points { get; private set; }
 		public float Angle { get; private set; }
 		public List<float> Vector { get; private set; }
-
-		public Unistroke(string name, IEnumerable<Vector2> points)
+		public BaseSpell Spell { get; private set; }
+		public Unistroke(string name, IEnumerable<Vector2> points, BaseSpell spell)
 		{
 			Name = string.Intern(name);
 			Points = DollarRecognizer.resample(points, _kNormalizedPoints);
@@ -113,6 +113,7 @@ public class DollarRecognizer
 			DollarRecognizer.scaleTo(Points, _kNormalizedSize);
 			DollarRecognizer.translateTo(Points, Vector2.zero);
 			Vector = DollarRecognizer.vectorize(Points);
+			Spell = spell;
 		}
 		
 		public override string ToString()
@@ -178,9 +179,9 @@ public class DollarRecognizer
 		_libraryIndex = new Dictionary<string, List<int>>();
 	}
 
-	public Unistroke SavePattern(string name, IEnumerable<Vector2> points)
+	public Unistroke SavePattern(string name, IEnumerable<Vector2> points, BaseSpell spell)
 	{
-		Unistroke stroke = new Unistroke(name, points);
+		Unistroke stroke = new Unistroke(name, points, spell);
 
 		int index = _library.Count;
 		_library.Add(stroke);

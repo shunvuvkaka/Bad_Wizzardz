@@ -1,15 +1,18 @@
 ﻿using System.Collections.Generic;
+using NUnit.Framework.Interfaces;
 using UnityEngine;
+using UnityEngine.UI.Extensions;
 
 public class DrawGlyph : MonoBehaviour
 {
     public Camera cam;
     public float maxPointDist = 0.1f;
     public bool debugMode = false;
+    public bool casting = false;
 
     private List<Vector2> glyphPoints = new List<Vector2>();
     private List<GlyphSO> glyphs = new List<GlyphSO>();
-    public LineRenderer lr;
+    public UILineRenderer lr;
 
     public DollarRecognizer dollarRecognizer;
 
@@ -25,13 +28,13 @@ public class DrawGlyph : MonoBehaviour
         
         foreach(GlyphSO glyph in loadedGlyphs)
         {
-            dollarRecognizer.SavePattern(glyph.name, glyph.points);
+            dollarRecognizer.SavePattern(glyph.name, glyph.points, glyph.spell);
         }
     }
 
     void Update()
     {
-        if (Input.GetMouseButton(0))
+        if (Input.GetMouseButton(0) && casting)
         {
             if (glyphPoints.Count < 1)
             {
@@ -46,24 +49,34 @@ public class DrawGlyph : MonoBehaviour
             }
         }
 
-        if (Input.GetMouseButtonUp(0))
+        if (Input.GetMouseButtonUp(0) && casting)
         {
-            Debug.Log(dollarRecognizer.Recognize(glyphPoints).ToString());
-
+            DollarRecognizer.Result result = dollarRecognizer.Recognize(glyphPoints);
             glyphPoints.Clear();
+
+            if (result.Match == null)
+                return;
+
+            Debug.Log(result.ToString());
+            result.Match.Spell.Cast();
         }
+
+        if (!casting)
+            glyphPoints.Clear();
 
         RenderLine(glyphPoints);
     }
 
     public void RenderLine(List<Vector2> glyphPoints)
     {
-        lr.positionCount = glyphPoints.Count;
+        Vector2[] points = new Vector2[glyphPoints.Count];
         for (int n = 0; n < glyphPoints.Count; n++)
         {
-            Vector3 worldP = cam.ScreenToWorldPoint(glyphPoints[n]);
-            worldP.z = 0;
-            lr.SetPosition(n, worldP);
+            Vector2 screenPoint = glyphPoints[n]; 
+
+            points[n] = screenPoint;
         }
+
+        lr.Points = points;
     }
 }

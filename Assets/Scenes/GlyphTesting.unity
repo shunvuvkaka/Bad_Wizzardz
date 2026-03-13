@@ -151,7 +151,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cam: {fileID: 519420031}
   maxPointDist: 0.1
-  debugMode: 0
+  debugMode: 1
+  casting: 0
   lr: {fileID: 39434247}
 --- !u!4 &39434246
 Transform:
