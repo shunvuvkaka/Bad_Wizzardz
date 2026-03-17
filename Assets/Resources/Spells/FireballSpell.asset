@@ -9,10 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8b365fae563c1b186a7716b4b8b0f93e, type: 3}
-  m_Name: ArrowSpell
-  m_EditorClassIdentifier: Assembly-CSharp::ArrowSpell
-  arrow: {fileID: 6118269903908994952, guid: be341d9929027c0e7ae00024704e62a1, type: 3}
-  speed: 50
-  lifespan: 2
+  m_Script: {fileID: 11500000, guid: 4c304279b562cc52da82547974f01657, type: 3}
+  m_Name: FireballSpell
+  m_EditorClassIdentifier: Assembly-CSharp::FireballSpell
+  fireball: {fileID: 7160929430491906363, guid: 6938e16006dbabbb7a6532f403ce5e77, type: 3}
+  speed: 7
+  lifespan: 30
   initialSpace: 2

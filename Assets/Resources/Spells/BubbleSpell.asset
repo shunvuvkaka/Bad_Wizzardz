@@ -16,5 +16,5 @@ MonoBehaviour:
   bubble: {fileID: 6190183234038614265, guid: 9602ef118413ba640a821b974860102d, type: 3}
   speed: 6
   lifespan: 10
-  initialSpace: 4
+  initialSpace: 6
   dampening: 1
