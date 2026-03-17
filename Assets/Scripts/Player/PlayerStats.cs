@@ -1,3 +1,4 @@
+
 using UnityEngine;
 
 public class PlayerStats : MonoBehaviour
@@ -17,4 +18,12 @@ public class PlayerStats : MonoBehaviour
         Mana = MaxMana;
 
     }
+    private void Update()
+    {
+        if (Health <= 0) 
+        {
+            Destroy(gameObject);
+        }
+    }
 }
+
