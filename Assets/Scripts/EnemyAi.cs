@@ -8,7 +8,8 @@ public class EnemyAi : MonoBehaviour
     public NavMeshAgent agent;
 
     public Transform Player;
-    public Transform lightningPrefab;
+    public GameObject WarningPrefab;
+    public GameObject RockPrefab;
 
 
     public Rigidbody Fireballprefab;
@@ -30,6 +31,7 @@ public class EnemyAi : MonoBehaviour
     public bool playerInSightRange, playerInAttackRange;
     public float attackSpeed;
     public float damage;
+    public float Offset;
 
     private void Awake()
     {
@@ -123,8 +125,8 @@ public class EnemyAi : MonoBehaviour
         }
         if (gameObject.tag == "Evocation") 
         {
-            Instantiate(lightningPrefab, Player.position, transform.rotation);
-            Destroy(lightningPrefab, attackSpeed + 0.2f);
+            Instantiate(WarningPrefab, new Vector3(Player.position.x, Player.position.y + Offset, Player.position.z), transform.rotation);
+            
         }
     }
 }
