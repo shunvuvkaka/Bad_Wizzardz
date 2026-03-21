@@ -7,7 +7,7 @@ public class Buildings : MonoBehaviour
     public float roadDist = 1;
     public float maxDist = 30;
     public float minBreadth = 5;
-    public Material buildingMat;
+    public Material[] buildingMats;
     public PhysicsMaterial buildingPhysics;
     [Header("Building Size and Spacing")]
     public Vector2Int widthRange = new Vector2Int(5, 25);
@@ -133,8 +133,8 @@ public class Buildings : MonoBehaviour
         BuildPoints build = new BuildPoints
         {
             //create a new buildpoint based off road (note lp shares same y value as fp keeping them from slanting)
-            fp = points[index],
-            lp = new Vector3(points[index + width].x, points[index].y, points[index + width].z)
+            fp = new Vector3(points[index].x, points[index].y - 0.1f, points[index].z),
+            lp = new Vector3(points[index + width].x, points[index].y - 0.1f, points[index + width].z)
         };
 
         //same as points but for normals
@@ -179,7 +179,7 @@ public class Buildings : MonoBehaviour
             Debug.DrawRay(build.lp, build.ln * backDist, impoactCol, float.MaxValue);
         }
 
-        //index the index by width and spacing
+        //increment the index by width and spacing
         index = index + width + space;
     }
 
@@ -519,9 +519,9 @@ public class Buildings : MonoBehaviour
         mc.material = buildingPhysics;
         mc.convex = true;
 
+        Material buildingMat = buildingMats[Random.Range(0, buildingMats.Length)];
+
         mr.material = buildingMat;
-        //turn off shadows
-        mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 
         //debug lines
         if (debugLines)

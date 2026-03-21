@@ -24,6 +24,12 @@ public class Road : MonoBehaviour
     public float maxTurnAngle = 45f;
     public float curveSmoothness = 0.2f;
 
+    [Header("Boundaries")]
+    public float distance;
+    public float height;
+    public Material borderMat;
+    public int borderFrequency;
+
     [Header("Render Distance")]
     public int segmentsAhead = 500;
     public int segmentsBehind = 100;
@@ -113,7 +119,7 @@ public class Road : MonoBehaviour
         {
             float turn = UnityEngine.Random.Range(-maxTurnAngle, maxTurnAngle);
             currentAngle = Mathf.Lerp(currentAngle, currentAngle + turn, curveSmoothness);
-            currentAngle = Mathf.Clamp(currentAngle, -90, 90);
+            currentAngle = Mathf.Clamp(currentAngle, -50, 50);
         }
 
         //direction in world space
@@ -192,36 +198,101 @@ public class Road : MonoBehaviour
 
     GameObject CreateRoadSegment(Vector3 a, Vector3 b, int index)
     {
-        Vector3 leftA, rightA;
+        Vector3 leftA; 
+        Vector3 rightA;
         int localIndex = index - roadIndexOffset;
+        Vector3 normalA = pointNormals[localIndex];
 
         if (index > 0 && roadSegments.ContainsKey(index - 1))
         {
             // Stitch from previous segment
-            Mesh prevMesh = roadSegments[index - 1].GetComponent<MeshFilter>().mesh;
+            Mesh prevMesh = roadSegments[index - 1].transform.GetChild(0).GetComponent<MeshFilter>().mesh;
             leftA = prevMesh.vertices[2]; 
             rightA = prevMesh.vertices[3];
         }
         else
         {
             //fallback if there is no previous segment. should ONLY be first segment
-            Vector3 normalA = pointNormals[localIndex] * (roadWidth / 2f);
-            leftA = a - normalA;
-            rightA = a + normalA;
+            leftA = a - normalA * (roadWidth / 2f);
+            rightA = a + normalA * (roadWidth / 2f);
         }
 
         GameObject go = Pool.Instance.GetPooledRoad();
         go.transform.SetParent(transform, true);
         go.name = $"Road Segment {index}";
 
-        RoadSegment segment = go.GetComponent<RoadSegment>();
+        RoadSegment segment = go.transform.GetChild(0).GetComponent<RoadSegment>();
+        GameObject wallGO  = go.transform.GetChild(1).gameObject;
 
-        Vector3 normalB = pointNormals[localIndex + 1] * (roadWidth / 2f);
-        Vector3 leftB = b - normalB;
-        Vector3 rightB = b + normalB;
-        Vector3 direction = (b - a).normalized;
+        Vector3 normalB = pointNormals[localIndex + 1];
+        Vector3 leftB = b - normalB * (roadWidth / 2f);
+        Vector3 rightB = b + normalB * (roadWidth / 2f);
 
         segment.ApplyMesh(leftA, rightA, leftB, rightB, roadMaterial, roadPhysics);
+
+        if (index % borderFrequency != 0)
+        {
+            go.SetActive(true);
+            return go;
+        }
+
+        Mesh wall = new Mesh();
+
+        if (index > borderFrequency && roadSegments.ContainsKey(index - 1))
+        {
+            // Stitch from previous segment
+            Mesh prevMesh = roadSegments[index - borderFrequency].transform.GetChild(1).GetComponent<MeshFilter>().mesh;
+            leftA = prevMesh.vertices[1]; 
+            rightA = prevMesh.vertices[5];
+        }
+        else
+        {
+            //fallback if there is no previous segment. should ONLY be first segment
+            leftA -= normalA * distance;
+            rightA += rightA + normalA * distance;
+        }
+
+        wall.vertices = new Vector3[]
+        {
+            //LEFT SIDE
+
+            leftA,                                            //bottom left corner,  0
+            leftB - normalA * distance,                       //bottom right corner, 1
+            leftA + Vector3.up * height,                      //top left corner,     2
+            leftB - normalA * distance + Vector3.up * height, //top right corner,    3
+
+            //RIGHT SIDE
+
+            rightA,                                            //bottom right corner,4
+            rightB + normalA * distance,                       //bottom left corner, 5
+            rightA + Vector3.up * height,                      //top right corner,   6
+            rightB + normalA * distance + Vector3.up * height, //top left corner,    7
+        };
+
+        wall.triangles = new int[]
+        {
+            //LEFT
+
+            0, 1, 3,
+            3, 2, 0,
+
+            //RIGHT
+
+            4, 6, 7,
+            7, 5, 4
+        };
+
+        wall.RecalculateNormals();
+
+        MeshFilter mf = wallGO.GetComponent<MeshFilter>();
+        MeshCollider mc = wallGO.GetComponent<MeshCollider>();
+        MeshRenderer mr = wallGO.GetComponent<MeshRenderer>();
+
+        mf.mesh = wall;
+        mc.sharedMesh = wall;
+        mr.material = borderMat;
+        //mc.convex = true;
+        mr.shadowCastingMode = ShadowCastingMode.Off;
         
         go.SetActive(true);
 

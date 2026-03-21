@@ -9,7 +9,7 @@ public class Roofs : MonoBehaviour
 {
     public float spacing;
     public Transform roofParent;
-    public Material roofMat;
+    public Material[] roofMats;
     public float maxHeight;
     public static Roofs Instance;
     [HideInInspector] public Dictionary<Vector2, GameObject> roofs = new Dictionary<Vector2, GameObject>();
@@ -122,6 +122,8 @@ public class Roofs : MonoBehaviour
             mesh.RecalculateBounds();
 
             PlacementPoints.Instance.Propify(verts, go.transform, false);
+
+            Material roofMat = roofMats[UnityEngine.Random.Range(0, roofMats.Length)];
 
             mf.mesh = mesh;
             mr.material = roofMat;
