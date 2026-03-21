@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c304279b562cc52da82547974f01657, type: 3}
   m_Name: FireballSpell
   m_EditorClassIdentifier: Assembly-CSharp::FireballSpell
+  manaCost: 20
+  healthCost: 15
   fireball: {fileID: 7160929430491906363, guid: 6938e16006dbabbb7a6532f403ce5e77, type: 3}
   speed: 7
   lifespan: 30

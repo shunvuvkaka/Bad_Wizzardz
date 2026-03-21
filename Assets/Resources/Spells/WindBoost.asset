@@ -12,3 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b934f2aa25a3933ef85225b27ca62167, type: 3}
   m_Name: WindBoost
   m_EditorClassIdentifier: Assembly-CSharp::WindBoost
+  manaCost: 20
+  healthCost: 5
+  windball: {fileID: 9030517374097789353, guid: 2d8ff566fd673f69dab87dbdb275789c, type: 3}
+  initialSpace: 2

@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
-public class PlayerController : MonoBehaviour
+public class PlayerMovement : MonoBehaviour
 {
     private Rigidbody playerRB;
 
@@ -44,12 +44,14 @@ public class PlayerController : MonoBehaviour
             Time.timeScale = 0.5f;
             DrawGlyph.Instance.casting = true;
             cam.casting = true;
+            GameUI.Instance.currentState = GameUI.UIState.Casting;
         }
         if (Input.GetKeyUp(KeyCode.LeftControl))
         {
             Time.timeScale = 1f;
             DrawGlyph.Instance.casting = false;
             cam.casting = false;
+            GameUI.Instance.currentState = GameUI.UIState.NotCasting;
         }
     }
 

@@ -10,7 +10,7 @@ public abstract class BaseMovingObject : MonoBehaviour
     private const string ENEMY_TAG = "Enemy";
     protected void Loop()
     {
-        rigidBody.linearVelocity = transform.forward * speed;
+        rigidBody.linearVelocity += transform.forward * speed;
 
         if (lifespan < 0)
             Destroy(gameObject);

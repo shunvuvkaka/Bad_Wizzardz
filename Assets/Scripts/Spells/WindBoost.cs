@@ -4,6 +4,9 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "WindBoost", menuName = "Spell/WindBoost")]
 public class WindBoost : BaseSpell
 {
+    public GameObject windball;
+    public float initialSpace;
+
     public override void Cast()
     {
         base.Cast();
@@ -14,6 +17,9 @@ public class WindBoost : BaseSpell
          * have fun!
         */
 
-        Force(1000f, player.transform.up);
+        GameObject go = Instantiate(windball, player.transform.position, Quaternion.LookRotation(cam.forward, cam.up));
+        Windball arrowS = go.GetComponent<Windball>();
+
+        go.transform.position += go.transform.forward * initialSpace;
     }
 }

@@ -59,6 +59,7 @@ public class DrawGlyph : MonoBehaviour
 
             Debug.Log(result.ToString());
             result.Match.Spell.Cast();
+            PlayerAnimation.Instance.Spell();
         }
 
         if (!casting)

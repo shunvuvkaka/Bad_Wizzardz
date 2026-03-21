@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 094be6e38c0a098a3833381e7365ee7e, type: 3}
   m_Name: BubbleSpell
   m_EditorClassIdentifier: Assembly-CSharp::BubbleSpell
+  manaCost: 10
+  healthCost: 10
   amount: 8
   bubble: {fileID: 6190183234038614265, guid: 9602ef118413ba640a821b974860102d, type: 3}
   speed: 6
