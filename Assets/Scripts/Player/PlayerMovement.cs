@@ -12,8 +12,9 @@ public class PlayerController : MonoBehaviour
 
     private Vector2 horizontalMovement;
     private float verticalMovement;
-    private readonly float velocityScaling = 10f;
-    private readonly float jumpVelocity = 9.81f;
+    private readonly float velocityScaling = 160f; //tweak for difference in speed
+    private readonly float jumpVelocity = 9.81f * 1.5f;
+    private readonly float acceleration = 0.25f; //tweak for difference in the "weight" of key presses on velocity and also speed 
 
     private bool isGrounded;
 
@@ -64,15 +65,26 @@ public class PlayerController : MonoBehaviour
         right.y = 0f;
         right.Normalize();
 
-        Vector3 movement = direction * forward * horizontalMovement.y +
-                           direction * right * horizontalMovement.x;
+        Vector3 movement = direction * forward * horizontalMovement.y + direction * right * horizontalMovement.x;
+
 
         Vector3 desiredVelocity = movement;
         Vector3 currentVelocity = playerRB.linearVelocity;
 
-        Vector3 velocityChange = desiredVelocity - new Vector3(currentVelocity.x, 0f, currentVelocity.z);
-        velocityChange.y = verticalMovement;
-        playerRB.AddForce(velocityChange, ForceMode.VelocityChange);
+        Vector3 velocityDiff = desiredVelocity - new Vector3(currentVelocity.x, 0f, currentVelocity.z);
+
+        if (!isGrounded)
+        {
+            playerRB.AddForce(Physics.gravity * 2.25f, ForceMode.Acceleration);
+        }
+
+        Vector3 force = velocityDiff * acceleration;
+        playerRB.AddForce(force, ForceMode.Acceleration);
+
+        if (verticalMovement > 0f)
+        {
+            playerRB.AddForce(Vector3.up * jumpVelocity, ForceMode.Impulse);
+        }
     }
 
     /* 
