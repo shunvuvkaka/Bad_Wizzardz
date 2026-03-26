@@ -12,7 +12,7 @@ public class NavMeshBuilder : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        NavMeshSurface surface = GetComponent<NavMeshSurface>();
+        NavMeshSurface surface = GameObject.Find("NavMesh").GetComponent<NavMeshSurface>();
         surface.AddData();
         surface.BuildNavMesh();
     }

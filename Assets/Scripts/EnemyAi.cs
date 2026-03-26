@@ -125,7 +125,8 @@ public class EnemyAi : MonoBehaviour
         }
         if (gameObject.tag == "Evocation") 
         {
-            Instantiate(WarningPrefab, new Vector3(Player.position.x, Player.position.y + Offset, Player.position.z), transform.rotation);
+            
+            Instantiate(WarningPrefab, new Vector3(Player.position.x, Player.position.y + Offset, Player.position.z), Quaternion.identity);
             
         }
     }
