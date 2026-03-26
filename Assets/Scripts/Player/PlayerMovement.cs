@@ -1,8 +1,10 @@
 using System;
+using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody))]
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : MonoBehaviour, IDamageable
 {
     private Rigidbody playerRB;
 
@@ -16,16 +18,30 @@ public class PlayerMovement : MonoBehaviour
     private float verticalMovement;
     public float velocityScaling = 10f;
     public float jumpVelocity = 9.81f;
+    public float airFriction;
+    public float standardFriction;
+    public float fallingGravity;
+    public float jumpDist;
+    public float jumpBuffer;
+    public float coyoteTime;
+    public float airMovement;
 
-    private bool isGrounded;
+    [SerializeField] private bool isGrounded;
+    private bool prevGrounded;
+    private bool canJump;
+    private bool canMove = true;
+    private Vector2 prevMovement;
 
     private bool isInvert = false;
     private readonly KeyCode invertKey = KeyCode.Q;
     private int direction = 1;
 
+    public static PlayerMovement Instance;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    void Awake()
     {
+        Instance = this;
         playerRB = GetComponent<Rigidbody>();
         playerTransform = GetComponent<Transform>();
         cameraTransform = Camera.main.transform;
@@ -35,24 +51,22 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
-        horizontalMovement = CalculateHorizontalMovementVector();
-        isGrounded = Physics.Raycast(transform.position, Vector3.down, 1.1f);
-        verticalMovement = CalculateVerticalMovementVector();
+        horizontalMovement = CalculateHorizontalMovementVector();   
+        isGrounded = Physics.Raycast(transform.position, Vector3.down, jumpDist);
 
-        if (Input.GetKeyDown(KeyCode.LeftControl))
+        MyInput();
+
+        if (prevGrounded != isGrounded && prevGrounded == true)
         {
-            Time.timeScale = 0.5f;
-            DrawGlyph.Instance.casting = true;
-            cam.casting = true;
-            GameUI.Instance.currentState = GameUI.UIState.Casting;
+            StartCoroutine(CoyoteTime());
         }
-        if (Input.GetKeyUp(KeyCode.LeftControl))
-        {
-            Time.timeScale = 1f;
-            DrawGlyph.Instance.casting = false;
-            cam.casting = false;
-            GameUI.Instance.currentState = GameUI.UIState.NotCasting;
-        }
+
+        prevGrounded = isGrounded;
+
+        verticalMovement = CalculateVerticalMovementVector(canJump);
+
+        Debug.DrawRay(transform.position, -transform.up * jumpDist, Color.blanchedAlmond);
+        
     }
 
     // FixedUpdate is called every fixed amount of DeltaTime 
@@ -74,20 +88,20 @@ public class PlayerMovement : MonoBehaviour
 
         if (playerRB.linearVelocity.y < 0)
         {
-            playerRB.AddForce(Physics.gravity * 4, ForceMode.Acceleration);
+            playerRB.AddForce(Physics.gravity * fallingGravity, ForceMode.Acceleration);
         }
         else
         {
-            playerRB.AddForce(Physics.gravity * 1, ForceMode.Acceleration);
+            playerRB.AddForce(Physics.gravity, ForceMode.Acceleration);
         }
 
         if (isGrounded)
         {
-            playerRB.linearDamping = 4;
+            playerRB.linearDamping = standardFriction;
         }
         else
         {
-            playerRB.linearDamping = 2;
+            playerRB.linearDamping = airFriction;
         }    
 
         
@@ -117,6 +131,11 @@ public class PlayerMovement : MonoBehaviour
      */
     private Vector2 CalculateHorizontalMovementVector()
     {
+        if (!canMove)
+        {
+            return prevMovement *= isGrounded ? 1 : airMovement;
+        }
+
         float xAxis = Input.GetAxisRaw("Horizontal");
         float zAxis = Input.GetAxisRaw("Vertical");
 
@@ -127,7 +146,11 @@ public class PlayerMovement : MonoBehaviour
 
         res.Normalize();
         res *= velocityScaling * shiftScaling;
+
+        if (!isGrounded)
+            res *= airMovement;
         
+        prevMovement = res;
 
         return res;
     }
@@ -137,10 +160,126 @@ public class PlayerMovement : MonoBehaviour
      * Input: None
      * Output: float velocity
      */
-    private float CalculateVerticalMovementVector()
+    private float CalculateVerticalMovementVector(bool grounded)
     {
-        if (Input.GetKey(KeyCode.Space) && isGrounded) { return jumpVelocity; }
+        if (!canMove)
+            return 0f;
+            
+        if (Input.GetKey(KeyCode.Space) && grounded) { return jumpVelocity; }
+
+        if (Input.GetKey(KeyCode.Space) && !grounded)
+            StartCoroutine(JumpBuffer());
 
         return 0f;
+    }
+
+    IEnumerator JumpBuffer()
+    {
+        float time = jumpBuffer;
+
+        while (time > 0)
+        {
+            yield return null;
+
+            time -= Time.deltaTime;
+
+            if (isGrounded)
+            {
+                verticalMovement = jumpVelocity;
+            }
+        } 
+    }
+    IEnumerator CoyoteTime()
+    {
+        float time = coyoteTime;
+
+        while (time > 0)
+        {
+            yield return null;
+
+            time -= Time.deltaTime;
+
+            canJump = true;
+
+            if (Input.GetKey(KeyCode.Space))
+                break;
+        }
+
+        canJump = isGrounded; 
+    }
+
+    void SetCursorToCenter()
+    {
+        Vector2 screenCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
+        Mouse.current.WarpCursorPosition(screenCenter);
+    }
+
+    public void MyInput()
+    {
+        if (Input.GetKeyDown(KeyCode.LeftControl) && GameUI.Instance.currentState == GameUI.UIState.NotCasting)
+        {
+            Time.timeScale = 0.5f;
+            DrawGlyph.Instance.casting = true;
+            cam.casting = true;
+            canMove = false;
+            Cursor.lockState = CursorLockMode.None;
+            SetCursorToCenter();
+            GameUI.Instance.currentState = GameUI.UIState.Casting;
+        }
+        if (Input.GetKeyUp(KeyCode.LeftControl) && GameUI.Instance.currentState == GameUI.UIState.Casting)
+        {
+            SetCursorToCenter();
+            Time.timeScale = 1f;
+            DrawGlyph.Instance.casting = false;
+            cam.casting = false;
+            canMove = true;
+            GameUI.Instance.currentState = GameUI.UIState.NotCasting;
+        }
+
+        if (Input.GetKeyDown(KeyCode.F) && (GameUI.Instance.currentState == GameUI.UIState.NotCasting || GameUI.Instance.currentState == GameUI.UIState.Viewing))
+        {
+            ToggleObject();
+        }
+        
+        if (Input.GetKeyDown(KeyCode.Tab) && (GameUI.Instance.currentState == GameUI.UIState.NotCasting || GameUI.Instance.currentState == GameUI.UIState.Paused))
+        {
+            TogglePause();
+        }
+    }
+
+    void ToggleObject()
+    {
+        ObjectUI.Instance.SelectObject(ObjectUI.Instance.baseImage);
+
+        PlayerAnimation.Instance.selecting = !PlayerAnimation.Instance.selecting;
+        PlayerAnimation.Instance.Object(PlayerAnimation.Instance.selecting);
+
+        if (PlayerAnimation.Instance.selecting)
+            GameUI.Instance.currentState = GameUI.UIState.Viewing;
+        else
+            GameUI.Instance.currentState = GameUI.UIState.NotCasting;
+
+        cam.casting = PlayerAnimation.Instance.selecting;
+
+        canMove = !canMove;
+    }
+
+    public void TogglePause()
+    {
+        canMove = !canMove;
+        cam.casting = !cam.casting;
+
+        if (GameUI.Instance.currentState == GameUI.UIState.Paused)
+            GameUI.Instance.currentState = GameUI.UIState.NotCasting;
+        else
+            GameUI.Instance.currentState = GameUI.UIState.Paused;
+    }
+
+    public void Damage(float damage)
+    {
+        PlayerStats.Instance.Health -= damage;
+
+        if (PlayerStats.Instance.Health < 0)
+            PlayerAnimation.Instance.Dead();
     }
 }

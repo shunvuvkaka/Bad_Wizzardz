@@ -26,7 +26,7 @@ public abstract class BaseSpell : ScriptableObject
         }
         else
         {
-            PlayerStats.Instance.Health -= healthCost;
+            PlayerMovement.Instance.Damage(healthCost);
         }
     }
     public void Force(float force, Vector3 dir)

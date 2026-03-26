@@ -5,7 +5,10 @@ using UnityEngine.UI;
 public class PlayerAnimation : MonoBehaviour
 {
     public Animator playerAnimator;
+    public Animator boxAnimator;
+    public Animator deathAnimator;
     public static PlayerAnimation Instance;
+    [HideInInspector] public bool selecting;
 
     void Awake()
     {
@@ -18,6 +21,8 @@ public class PlayerAnimation : MonoBehaviour
     public void Dead()
     {
         playerAnimator.SetTrigger("Dead");
+        deathAnimator.SetBool("Die", true);
+        GameUI.Instance.currentState = GameUI.UIState.Dead;
     }
     public void Spell()
     {
@@ -26,6 +31,7 @@ public class PlayerAnimation : MonoBehaviour
     public void Object(bool isSelecting)
     {
         playerAnimator.SetBool("Object", isSelecting);
+        boxAnimator.SetBool("Object", isSelecting);
     }
 }
 #if UNITY_EDITOR

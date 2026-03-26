@@ -10,6 +10,8 @@ public class GameUI : MonoBehaviour
     public GameObject alwaysActive;
     public GameObject casting;
     public GameObject notCasting;
+    public GameObject paused;
+    public GameObject dead;
     [Header("Sliders")]
     public Slider manaOver;
     public Slider manaUnder;
@@ -25,7 +27,8 @@ public class GameUI : MonoBehaviour
         Casting,
         NotCasting,
         Viewing,
-        Paused
+        Paused,
+        Dead
     }
 
     public UIState currentState;
@@ -49,10 +52,30 @@ public class GameUI : MonoBehaviour
             case UIState.Casting:
                 casting.SetActive(true);
                 notCasting.SetActive(false);
+                alwaysActive.SetActive(true);
+                paused.SetActive(false);
                 break;
             case UIState.NotCasting:
                 casting.SetActive(false);
                 notCasting.SetActive(true);
+                alwaysActive.SetActive(true);
+                paused.SetActive(false);
+                break;
+            case UIState.Viewing:
+                notCasting.SetActive(false);
+                alwaysActive.SetActive(true);
+                break;
+            case UIState.Paused:
+                alwaysActive.SetActive(false);
+                notCasting.SetActive(false);
+                paused.SetActive(true);
+                break;
+            case UIState.Dead:
+                casting.SetActive(false);
+                notCasting.SetActive(false);
+                alwaysActive.SetActive(false);
+                paused.SetActive(false);
+                dead.SetActive(true);
                 break;
         }
 

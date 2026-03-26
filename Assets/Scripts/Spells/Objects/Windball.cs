@@ -5,7 +5,10 @@ public class Windball : BaseMovingObject
 {
     public SphereCollider sphereCollider;
     public float boostRadius;
+    public MeshRenderer mr;
     public float boost;
+    public float boostTime;
+    public ParticleSystem particle;
     void FixedUpdate()
     {
         Loop();
@@ -14,8 +17,10 @@ public class Windball : BaseMovingObject
     void OnCollisionEnter(Collision collision)
     {
         rigidBody.constraints = RigidbodyConstraints.FreezePosition;
+        mr.enabled = false;
+        particle.Play();
 
-        StartCoroutine(Boom());
+        StartCoroutine(Explode());
 
         if (collision.transform.tag == "Player" || collision.transform.tag == "Spell")
         {
@@ -26,11 +31,19 @@ public class Windball : BaseMovingObject
         }
     }
 
-    IEnumerator Boom()
+    IEnumerator Explode()
     {
-        sphereCollider.radius = boostRadius;
+        float currentTIme = boostTime;
+        float radiusSteps = boostRadius - sphereCollider.radius / boostTime;
 
-        yield return new WaitForSeconds(0.5f);
+        while (currentTIme > 0)
+        {
+            sphereCollider.radius += radiusSteps * Time.deltaTime;
+
+            currentTIme -= Time.deltaTime;
+
+            yield return new WaitForEndOfFrame();
+        }
 
         Destroy(gameObject);
     }
