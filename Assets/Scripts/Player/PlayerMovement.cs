@@ -4,8 +4,11 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody))]
-public class PlayerMovement : MonoBehaviour, IDamageable
+public class PlayerMovement : MonoBehaviour
 {
+    public float moveSpeed;
+    public float groundDrag;
+    public Transform orientation;
     private Rigidbody playerRB;
 
     public Transform playerTransform;   // player object
@@ -16,7 +19,7 @@ public class PlayerMovement : MonoBehaviour, IDamageable
 
     private Vector2 horizontalMovement;
     private float verticalMovement;
-    public float velocityScaling = 10f;
+    public float velocityScaling = 160f;
     public float jumpVelocity = 9.81f;
     public float airFriction;
     public float standardFriction;
@@ -31,6 +34,13 @@ public class PlayerMovement : MonoBehaviour, IDamageable
     private bool canJump;
     private bool canMove = true;
     private Vector2 prevMovement;
+    private readonly float acceleration = 0.25f; //tweak for difference in the "weight" of key presses on velocity and also speed 
+
+    public float playerHeight;
+    public LayerMask whatIsGround;
+    bool grounded;
+
+    Rigidbody rb;
 
     private bool isInvert = false;
     private readonly KeyCode invertKey = KeyCode.Q;
@@ -73,7 +83,7 @@ public class PlayerMovement : MonoBehaviour, IDamageable
     // Default: 20ms
     void FixedUpdate()
     {
-        if(Input.GetKey(invertKey) && !isInvert)
+        if (Input.GetKey(invertKey) && !isInvert)
         {
             playerTransform.Rotate(0f, 180f, 0f);
             direction = -1;
@@ -86,26 +96,6 @@ public class PlayerMovement : MonoBehaviour, IDamageable
             isInvert = false;
         }
 
-        if (playerRB.linearVelocity.y < 0)
-        {
-            playerRB.AddForce(Physics.gravity * fallingGravity, ForceMode.Acceleration);
-        }
-        else
-        {
-            playerRB.AddForce(Physics.gravity, ForceMode.Acceleration);
-        }
-
-        if (isGrounded)
-        {
-            playerRB.linearDamping = standardFriction;
-        }
-        else
-        {
-            playerRB.linearDamping = airFriction;
-        }    
-
-        
-        Vector3 velocity = playerRB.linearVelocity;
 
         Vector3 forward = cameraTransform.forward;
         forward.y = 0f;
@@ -114,14 +104,27 @@ public class PlayerMovement : MonoBehaviour, IDamageable
         Vector3 right = cameraTransform.right;
         right.y = 0f;
         right.Normalize();
-       
-        Vector3 movement = direction * horizontalMovement.y * forward + direction * horizontalMovement.x * right;
 
-        velocity.x = movement.x;
-        velocity.z = movement.z;
-        velocity.y = verticalMovement;
-        
-        playerRB.AddForce(velocity, ForceMode.VelocityChange);
+        Vector3 movement = direction * forward * horizontalMovement.y + direction * right * horizontalMovement.x;
+
+
+        Vector3 desiredVelocity = movement;
+        Vector3 currentVelocity = playerRB.linearVelocity;
+
+        Vector3 velocityDiff = desiredVelocity - new Vector3(currentVelocity.x, 0f, currentVelocity.z);
+
+        if (!isGrounded)
+        {
+            playerRB.AddForce(Physics.gravity * 2.25f, ForceMode.Acceleration);
+        }
+
+        Vector3 force = velocityDiff * acceleration;
+        playerRB.AddForce(force, ForceMode.Acceleration);
+
+        if (verticalMovement > 0f)
+        {
+            playerRB.AddForce(Vector3.up * jumpVelocity, ForceMode.Impulse);
+        }
     }
 
     /* 

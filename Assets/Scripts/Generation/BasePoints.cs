@@ -1,3 +1,4 @@
+
 using System;
 using UnityEngine;
 
@@ -17,3 +18,4 @@ public struct BasePoints
         tl = topLeft;
     }
 }
+

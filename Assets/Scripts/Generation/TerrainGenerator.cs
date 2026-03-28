@@ -1,3 +1,4 @@
+
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Burst;
@@ -232,5 +233,4 @@ public class TerrainGenerator : MonoBehaviour
         }
     }
 }
-
 
