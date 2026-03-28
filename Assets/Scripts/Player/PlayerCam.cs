@@ -1,37 +1,32 @@
 using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
 
-public class PlayerCam : MonoBehaviour
+public class PlayerCamera : MonoBehaviour
 {
-    public float sensX;
-    public float sensY;
 
-    public Transform orientation;
+    private Transform playerBody;
+    private float pitch = 0f;
+    private readonly float sensitivity = 2f;
 
-    float xRotation;
-    float yRotation;
-
-    private void Start()
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    void Start()
     {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        playerBody = transform.parent;
     }
 
-    private void Update() 
+    // Fixed Update called once every 20ms
+    void FixedUpdate()
     {
-        //Get Mouse Input
-        float mouseX = Input.GetAxisRaw("Mouse X") * Time.deltaTime * sensX;
-        float mouseY = Input.GetAxisRaw("Mouse Y") * Time.deltaTime * sensY;
+        float mouseX = Input.GetAxis("Mouse X") * sensitivity;
+        float mouseY = Input.GetAxis("Mouse Y") * sensitivity;
 
-        yRotation += mouseX;
+        pitch -= mouseY;
+        pitch = Mathf.Clamp(pitch, -90f, 90f);
 
-        xRotation -= mouseY;
-        xRotation = Mathf.Clamp(xRotation, -90f, 90f);
+        // Apply vertical rotation to camera
+        transform.localRotation = Quaternion.Euler(pitch, 0f, 0f);
 
-        // Rotate Cam and Orientation
-        transform.rotation = Quaternion.Euler(xRotation, yRotation, 0);
-        orientation.rotation = Quaternion.Euler(0, yRotation, 0);
-
+        // Apply horizontal rotation to player (yaw)
+        playerBody.Rotate(Vector3.up * mouseX);
     }
 }
-    
