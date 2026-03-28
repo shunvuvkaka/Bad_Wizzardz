@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 public class PlayerStats : MonoBehaviour
 {
-    //Health
+    public static PlayerStats Instance;
     public float Health;
     public float HealthRegen;     //per second
     public float MaxHealth;
@@ -20,6 +20,7 @@ public class PlayerStats : MonoBehaviour
 
     //Speed
     public float Speed;
+    public float MaxSpeed;
 
     //Counter
     private int count;
@@ -27,14 +28,13 @@ public class PlayerStats : MonoBehaviour
 
     private void Start()
     {
-        MaxHealth = 100;
-        Health = 100;
-        HealthRegen = 0;
-        MaxMana = 100;
-        Mana = 100;
-        ManaRegen = 0;
-        Speed = 1;
-        DamageMultiplier = 1;
+        Health = MaxHealth;
+        Speed = MaxSpeed;
+        Mana = MaxMana;
+    }
+    void Awake()
+    {
+        Instance = this;
     }
 
     private void FixedUpdate()

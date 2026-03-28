@@ -73,10 +73,6 @@ public class Pool : MonoBehaviour
     {
         road.transform.parent = transform;
 
-        for (int i = road.transform.childCount - 1; i >= 0; i--)
-        {
-            Destroy(road.transform.GetChild(i).gameObject);
-        }
         road.SetActive(false);
     }
 }

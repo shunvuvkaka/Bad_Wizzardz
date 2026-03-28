@@ -10,9 +10,11 @@ public class Roofs : MonoBehaviour
 {
     public float spacing;
     public Transform roofParent;
-    public Material roofMat;
+    public Material[] roofMats;
     public float maxHeight;
+    public float inclination;
     public static Roofs Instance;
+    public PhysicsMaterial roofPhys;
     [HideInInspector] public Dictionary<Vector2, GameObject> roofs = new Dictionary<Vector2, GameObject>();
 
 
@@ -85,7 +87,8 @@ public class Roofs : MonoBehaviour
             vertices = allVertices,
             triangles = allTriangles,
             right = right,
-            maxHeight = maxHeight
+            maxHeight = maxHeight,
+            inclination = inclination
         };
 
         JobHandle handle = job.Schedule(roofCount, 32);
@@ -124,9 +127,12 @@ public class Roofs : MonoBehaviour
 
             PlacementPoints.Instance.Propify(verts, go.transform, false);
 
+            Material roofMat = roofMats[UnityEngine.Random.Range(0, roofMats.Length)];
+
             mf.mesh = mesh;
             mr.material = roofMat;
             mc.sharedMesh = mesh;
+            mc.material = roofPhys;
             mc.convex = true;
         }
 
@@ -147,6 +153,7 @@ public class Roofs : MonoBehaviour
         [ReadOnly] public float spacing;
         [ReadOnly] public bool right;
         [ReadOnly] public float maxHeight;
+        [ReadOnly] public float inclination;
         [NativeDisableParallelForRestriction] public NativeArray<float3> vertices;
         [NativeDisableParallelForRestriction] public NativeArray<int> triangles;
         public void Execute(int index)
@@ -228,14 +235,14 @@ public class Roofs : MonoBehaviour
             float xHeight;
 
             if (z > zMid)
-                zHeight = zCount - z;
+                zHeight = zCount - z * inclination;
             else
-                zHeight = z;
+                zHeight = z * inclination;
 
             if (x > xMid)
-                xHeight = xCount - x;
+                xHeight = xCount - x * inclination;
             else
-                xHeight = x;
+                xHeight = x * inclination;
             
             xHeight = math.clamp(xHeight, 0.01f, maxHeight);
             zHeight = math.clamp(zHeight, 0.01f, maxHeight);
