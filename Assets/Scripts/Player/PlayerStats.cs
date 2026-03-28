@@ -1,3 +1,4 @@
+
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -47,6 +48,13 @@ public class PlayerStats : MonoBehaviour
         }
         ++count;
     }
+    private void Update()
+    {
+        if (Health <= 0) 
+        {
+            Destroy(gameObject);
+        }
+    }
 
 
     public float getDamage()
@@ -54,3 +62,4 @@ public class PlayerStats : MonoBehaviour
         return Damage * DamageMultiplier;
     }    
 }
+

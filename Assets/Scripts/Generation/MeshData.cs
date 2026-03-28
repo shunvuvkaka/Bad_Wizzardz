@@ -1,3 +1,4 @@
+
 using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
@@ -26,4 +27,4 @@ public struct MeshData : System.IDisposable
         if (triangles.IsCreated) 
             triangles.Dispose();
     }
-} 
+}

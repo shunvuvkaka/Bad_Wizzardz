@@ -1,3 +1,4 @@
+
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Jobs;
@@ -287,13 +288,15 @@ public class Road : MonoBehaviour
         return array;
     }
     */
-    void OnDestroy()
-    {
-        if (jobPointNormals.IsCreated)
-            jobPointNormals.Dispose();
-        if (jobRoadPoints.IsCreated)
-            jobRoadPoints.Dispose();
-    }
+
+
+void OnDestroy()
+{
+ if (jobPointNormals.IsCreated)
+     jobPointNormals.Dispose();
+ if (jobRoadPoints.IsCreated)
+     jobRoadPoints.Dispose();
+}
 }
 
 

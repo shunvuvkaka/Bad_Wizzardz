@@ -1,3 +1,4 @@
+
 using System.Runtime.CompilerServices;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -10,7 +11,6 @@ public class Item_Interact : MonoBehaviour
     public float PotionAmount;
 
     public PlayerStats Stats;
-    public Transform Potion;
 
     private void Start()
     {
@@ -18,12 +18,13 @@ public class Item_Interact : MonoBehaviour
     }
     private void OnTriggerStay(Collider other)
     {
-        if (other.gameObject.tag == "Player" && Input.GetKey("e")) 
+        if (other.gameObject.tag == "Player") 
         {
- 
 
-            //Apply Stat Boosts
-            Stats.Health += Healthboost;
+            if (Input.GetKey("e"))
+            {
+                //Apply Stat Boosts
+                Stats.Health += Healthboost;
                 Stats.Mana += Manaboost;
 
                 if (Stats.Mana > Stats.MaxMana)
@@ -35,10 +36,10 @@ public class Item_Interact : MonoBehaviour
                     Stats.Health = Stats.MaxHealth;
                 }
 
-            // Destroy Item
-            PotionAmount -= 1;
-            Destroy(gameObject);
-                
+                // Destroy Item
+                PotionAmount -= 1;
+                Destroy(gameObject);
+            }
 
         }
     }

@@ -5,6 +5,9 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerController : MonoBehaviour
 {
+    public float moveSpeed;
+    public float groundDrag;
+    public Transform orientation;
     private Rigidbody playerRB;
 
     public Transform playerTransform;   // player object
@@ -16,6 +19,11 @@ public class PlayerController : MonoBehaviour
     private readonly float jumpVelocity = 9.81f * 1.5f;
     private readonly float acceleration = 0.25f; //tweak for difference in the "weight" of key presses on velocity and also speed 
 
+    public float playerHeight;
+    public LayerMask whatIsGround;
+    bool grounded;
+
+    Rigidbody rb;
     private bool isGrounded;
 
     private bool isInvert = false;
