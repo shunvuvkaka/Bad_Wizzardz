@@ -6,17 +6,18 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerMovement : MonoBehaviour
 {
+    //Player
     public float moveSpeed;
     public float groundDrag;
     public Transform orientation;
     private Rigidbody playerRB;
-
     public Transform playerTransform;   // player object
     public Transform cameraTransform;   // main camera
     public PlayerCamera cam;
 
     public float shiftSpeed;
 
+    //Regular Movement
     private Vector2 horizontalMovement;
     private float verticalMovement;
     public float velocityScaling = 160f;
@@ -35,6 +36,7 @@ public class PlayerMovement : MonoBehaviour
     private bool canMove = true;
     private Vector2 prevMovement;
     private readonly float acceleration = 0.25f; //tweak for difference in the "weight" of key presses on velocity and also speed 
+    private bool isGrounded;
 
     public float playerHeight;
     public LayerMask whatIsGround;
@@ -42,10 +44,13 @@ public class PlayerMovement : MonoBehaviour
 
     Rigidbody rb;
 
+    //Inverted Stuff
     private bool isInvert = false;
     private readonly KeyCode invertKey = KeyCode.Q;
     private int direction = 1;
 
+    //Climb
+    private bool isLatched = false;
     public static PlayerMovement Instance;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -95,6 +100,20 @@ public class PlayerMovement : MonoBehaviour
             direction = 1;
             isInvert = false;
         }
+
+        if (!isGrounded && Input.GetKey(KeyCode.Space) && !isLatched)
+        {
+            TryGrabbingClimbPoint();
+        }
+
+        if (isLatched && Input.GetKey(KeyCode.Space))
+        {
+            JumpOffClimbPoint();
+            isLatched = false;
+        }
+
+        playerRB.constraints = isLatched ? RigidbodyConstraints.FreezePosition : RigidbodyConstraints.None;     //Player is unable to move while latched
+
 
 
         Vector3 forward = cameraTransform.forward;
@@ -176,6 +195,36 @@ public class PlayerMovement : MonoBehaviour
         return 0f;
     }
 
+
+    /*
+     * Function Attmepts To Latch Onto A Climbing Point
+     * Input: None
+     * Output: Latched Or Not
+     */
+    private bool TryGrabbingClimbPoint()
+    {
+
+        RaycastHit hit;
+
+        if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out hit, 3f))
+        {
+            //ClimbPoint climb = hit.collider.GetComponentInParent<ClimbPoint>();
+
+            //if (climb != null)
+            //{
+            //   isLatched = true;
+            //}
+        }
+        return isLatched;
+    }
+
+    private void JumpOffClimbPoint()
+    {
+        Vector3 JumpDir = cameraTransform.forward;
+
+        JumpDir *= 10f;
+
+        playerRB.AddForce(JumpDir, ForceMode.Impulse);
     IEnumerator JumpBuffer()
     {
         float time = jumpBuffer;
