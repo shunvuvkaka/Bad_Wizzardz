@@ -5,22 +5,26 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerController : MonoBehaviour
 {
+    //Player
     private Rigidbody playerRB;
-
     public Transform playerTransform;   // player object
     public Transform cameraTransform;   // main camera
 
+    //Regular Movement
     private Vector2 horizontalMovement;
     private float verticalMovement;
     private readonly float velocityScaling = 160f; //tweak for difference in speed
     private readonly float jumpVelocity = 9.81f * 1.5f;
     private readonly float acceleration = 0.25f; //tweak for difference in the "weight" of key presses on velocity and also speed 
-
     private bool isGrounded;
 
+    //Inverted Stuff
     private bool isInvert = false;
     private readonly KeyCode invertKey = KeyCode.Q;
     private int direction = 1;
+
+    //Climb
+    private bool isLatched = false;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -55,6 +59,20 @@ public class PlayerController : MonoBehaviour
             direction = 1;
             isInvert = false;
         }
+
+        if (!isGrounded && Input.GetKey(KeyCode.Space) && !isLatched)
+        {
+            TryGrabbingClimbPoint();
+        }
+
+        if (isLatched && Input.GetKey(KeyCode.Space))
+        {
+            JumpOffClimbPoint();
+            isLatched = false;
+        }
+
+        playerRB.constraints = isLatched ? RigidbodyConstraints.FreezePosition : RigidbodyConstraints.None;     //Player is unable to move while latched
+
 
 
         Vector3 forward = cameraTransform.forward;
@@ -119,5 +137,37 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKey(KeyCode.Space) && isGrounded) { return jumpVelocity; }
 
         return 0f;
+    }
+
+
+    /*
+     * Function Attmepts To Latch Onto A Climbing Point
+     * Input: None
+     * Output: Latched Or Not
+     */
+    private bool TryGrabbingClimbPoint()
+    {
+
+        RaycastHit hit;
+
+        if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out hit, 3f))
+        {
+            //ClimbPoint climb = hit.collider.GetComponentInParent<ClimbPoint>();
+
+            //if (climb != null)
+            //{
+            //   isLatched = true;
+            //}
+        }
+        return isLatched;
+    }
+
+    private void JumpOffClimbPoint()
+    {
+        Vector3 JumpDir = cameraTransform.forward;
+
+        JumpDir *= 10f;
+
+        playerRB.AddForce(JumpDir, ForceMode.Impulse);
     }
 }
