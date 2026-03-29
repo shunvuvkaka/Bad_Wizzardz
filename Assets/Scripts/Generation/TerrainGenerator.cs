@@ -1,3 +1,4 @@
+
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Burst;
@@ -36,6 +37,7 @@ public class TerrainGenerator : MonoBehaviour
     void Awake()
     {
         Application.targetFrameRate = Mathf.RoundToInt(targetFPS);
+        Screen.SetResolution(1920, 1080, false);
 
         //0.5 means half of frame time will be allocated to terrain generation
         budget = 0.5f / targetFPS;
@@ -231,5 +233,4 @@ public class TerrainGenerator : MonoBehaviour
         }
     }
 }
-
 

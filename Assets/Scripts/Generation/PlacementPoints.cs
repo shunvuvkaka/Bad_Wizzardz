@@ -1,3 +1,4 @@
+
 using System.Collections.Generic;
 using Unity.Jobs;
 using Unity.Mathematics;
@@ -77,7 +78,7 @@ public class PlacementPoints : MonoBehaviour
                     else
                         prop = roofProps[Mathf.RoundToInt(UnityEngine.Random.Range(0, roofProps.Length))];
                 
-                    Instantiate(prop, point, Quaternion.identity, parent);
+                    Instantiate(prop, point, Quaternion.Euler(0, UnityEngine.Random.Range(0, 360), 0), parent);
                 }
 
                 if (currentInt == 0)

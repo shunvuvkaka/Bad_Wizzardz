@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c304279b562cc52da82547974f01657, type: 3}
+  m_Name: FireballSpell
+  m_EditorClassIdentifier: Assembly-CSharp::FireballSpell
+  manaCost: 20
+  healthCost: 15
+  fireball: {fileID: 7160929430491906363, guid: 6938e16006dbabbb7a6532f403ce5e77, type: 3}
+  speed: 7
+  lifespan: 30
+  initialSpace: 2
