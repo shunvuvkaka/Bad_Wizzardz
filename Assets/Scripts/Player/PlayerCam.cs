@@ -1,6 +1,4 @@
-using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
-using UnityEngine.InputSystem;
 public class PlayerCamera : MonoBehaviour
 {
 
@@ -8,11 +6,13 @@ public class PlayerCamera : MonoBehaviour
     private float pitch = 0f;
     private readonly float sensitivity = 2f;
     public bool casting = false;
+    public static PlayerCamera Instance;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    void Awake()
     {
         playerBody = transform.parent;
+        Instance = this;
     }
 
     // Update is called once per frame

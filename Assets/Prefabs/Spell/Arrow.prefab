@@ -140,7 +140,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Arrow
   speed: 0
   lifespan: 0
-  damage: 0
+  damage: 500
   rigidBody: {fileID: 9102772895099854092}
 --- !u!136 &7304723974161514207
 CapsuleCollider:

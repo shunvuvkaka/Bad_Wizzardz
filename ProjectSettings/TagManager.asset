@@ -4,31 +4,21 @@
 TagManager:
   serializedVersion: 3
   tags:
-<<<<<<< HEAD
   - Object
-  - Spell
-=======
-  - Ground
   - Conjuration
-  - Evocation
->>>>>>> c241efbd35059e47cea442d6f42b25a6df6c10c4
+  - Spell
+  - Score
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - Terrain
+  - Walkable
   - Water
   - UI
-  - Roof
-<<<<<<< HEAD
-  - No Fog
-  - Arms
-  - 
-=======
-  - Ground
   - Player
+  - Wall
+  - Attack
   - Enemy
->>>>>>> c241efbd35059e47cea442d6f42b25a6df6c10c4
   - 
   - 
   - 
@@ -57,10 +47,3 @@ TagManager:
     locked: 0
   m_RenderingLayers:
   - Default
-  - Light Layer 1
-  - Light Layer 2
-  - Light Layer 3
-  - Light Layer 4
-  - Light Layer 5
-  - Light Layer 6
-  - Light Layer 7

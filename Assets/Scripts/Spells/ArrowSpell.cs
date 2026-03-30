@@ -16,7 +16,7 @@ public class ArrowSpell : BaseSpell
          * "player" is an already provided value of type GameObject
          * have fun!
         */
-        Force(1000f, -player.transform.forward);
+        Force(600f, -player.transform.forward);
 
         GameObject go = Instantiate(arrow, player.transform.position, Quaternion.LookRotation(cam.forward, cam.up));
         Arrow arrowS = go.GetComponent<Arrow>();

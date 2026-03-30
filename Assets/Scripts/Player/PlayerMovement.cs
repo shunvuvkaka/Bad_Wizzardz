@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody))]
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : MonoBehaviour, IDamageable
 {
     public float moveSpeed;
     public float groundDrag;
@@ -26,6 +26,7 @@ public class PlayerMovement : MonoBehaviour
     public float fallingGravity;
     public float jumpDist;
     public float jumpBuffer;
+    public int jumpPause;
     public float coyoteTime;
     public float airMovement;
 
@@ -38,13 +39,11 @@ public class PlayerMovement : MonoBehaviour
 
     public float playerHeight;
     public LayerMask whatIsGround;
-    bool grounded;
-
-    Rigidbody rb;
 
     private bool isInvert = false;
     private readonly KeyCode invertKey = KeyCode.Q;
     private int direction = 1;
+    private int currentPuase = -1;
 
     public static PlayerMovement Instance;
 
@@ -113,18 +112,28 @@ public class PlayerMovement : MonoBehaviour
 
         Vector3 velocityDiff = desiredVelocity - new Vector3(currentVelocity.x, 0f, currentVelocity.z);
 
+        if (verticalMovement > 0f && currentPuase < 0)
+        {
+            playerRB.linearVelocity += Vector3.up * verticalMovement;
+            isGrounded = false;
+            Debug.Log("jump force applied");
+            currentPuase = jumpPause;
+        }
+
         if (!isGrounded)
         {
-            playerRB.AddForce(Physics.gravity * 2.25f, ForceMode.Acceleration);
+            playerRB.linearDamping = airFriction;
+            playerRB.AddForce(Physics.gravity * fallingGravity, ForceMode.Acceleration);
         }
+        else
+        {
+            playerRB.linearDamping = standardFriction;
+        }
+
+        currentPuase --;
 
         Vector3 force = velocityDiff * acceleration;
         playerRB.AddForce(force, ForceMode.Acceleration);
-
-        if (verticalMovement > 0f)
-        {
-            playerRB.AddForce(Vector3.up * jumpVelocity, ForceMode.Impulse);
-        }
     }
 
     /* 
@@ -219,6 +228,10 @@ public class PlayerMovement : MonoBehaviour
 
     public void MyInput()
     {
+        if (GameUI.Instance.currentState == GameUI.UIState.Dead)
+        {
+            return;
+        }
         if (Input.GetKeyDown(KeyCode.LeftControl) && GameUI.Instance.currentState == GameUI.UIState.NotCasting)
         {
             Time.timeScale = 0.5f;
@@ -282,7 +295,11 @@ public class PlayerMovement : MonoBehaviour
     {
         PlayerStats.Instance.Health -= damage;
 
+        PlayerAnimation.Instance.Hit();
+
         if (PlayerStats.Instance.Health < 0)
+        {
             PlayerAnimation.Instance.Dead();
+        }
     }
 }

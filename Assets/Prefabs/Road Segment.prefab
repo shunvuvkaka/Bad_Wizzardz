@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 62062613467793751}
   - component: {fileID: 7583805653511122526}
   - component: {fileID: 8378371282855564491}
-  m_Layer: 7
+  m_Layer: 3
   m_Name: Barrier
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -126,7 +126,7 @@ GameObject:
   - component: {fileID: 5140797337940974628}
   - component: {fileID: 2589742280824540580}
   - component: {fileID: 6758335760911652592}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Road
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -248,7 +248,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 526247554407346837}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Road Segment
   m_TagString: Untagged
   m_Icon: {fileID: 0}

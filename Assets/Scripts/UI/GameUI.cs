@@ -71,6 +71,9 @@ public class GameUI : MonoBehaviour
                 paused.SetActive(true);
                 break;
             case UIState.Dead:
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+                PlayerCamera.Instance.casting = true;
                 casting.SetActive(false);
                 notCasting.SetActive(false);
                 alwaysActive.SetActive(false);

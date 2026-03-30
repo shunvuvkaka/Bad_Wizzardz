@@ -5,7 +5,7 @@ public class DeadUI : MonoBehaviour
 {
     public void Restart()
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        GameplayManager.Instance.LoadScene("MainLevel");
     }
     public void Quit()
     {

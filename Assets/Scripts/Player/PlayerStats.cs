@@ -47,19 +47,6 @@ public class PlayerStats : MonoBehaviour
             if (Mana > MaxMana) { Mana = MaxMana; }
         }
         ++count;
-    }
-    private void Update()
-    {
-        if (Health <= 0) 
-        {
-            Destroy(gameObject);
-        }
-    }
-
-
-    public float getDamage()
-    {
-        return Damage * DamageMultiplier;
-    }    
+    }   
 }
 
