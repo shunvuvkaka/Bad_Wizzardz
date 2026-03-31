@@ -1,19 +1,28 @@
-using System;
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerMovement : MonoBehaviour, IDamageable
 {
-    public float moveSpeed;
-    public float groundDrag;
-    public Transform orientation;
-    private Rigidbody playerRB;
+    // ===== STATE =====
+    public enum PlayerState
+    {
+        Normal,
+        Climbing,
+        Casting,
+        Viewing,
+        Paused
+    }
 
-    public Transform playerTransform;   // player object
-    public Transform cameraTransform;   // main camera
+    private PlayerState currentState = PlayerState.Normal;
+
+    // ===== REFERENCES =====
+    public Transform cameraTransform;
     public PlayerCamera cam;
+    private Rigidbody playerRB;
+    public static PlayerMovement Instance;
 
     public float shiftSpeed;
 
@@ -46,57 +55,79 @@ public class PlayerMovement : MonoBehaviour, IDamageable
     private int direction = 1;
     private int currentPuase = -1;
 
-    public static PlayerMovement Instance;
+    // ===== JUMP =====
+    public float jumpForce = 8f;
+    public float coyoteTime = 0.15f;
+    private float coyoteTimer;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    // ===== GROUND =====
+    public float groundCheckDistance = 1.1f;
+    public LayerMask groundLayer;
+    private bool isGrounded;
+
+    // ===== CLIMB =====
+    public float climbRange = 3f;
+
+    // ===== INPUT =====
+    private Vector2 input;
+
     void Awake()
     {
-        Instance = this;
         playerRB = GetComponent<Rigidbody>();
-        playerTransform = GetComponent<Transform>();
         cameraTransform = Camera.main.transform;
-        horizontalMovement = Vector2.zero;
+        Instance = this;
     }
 
-    // Update is called once per frame
-    private void Update()
+    void Update()
     {
-        horizontalMovement = CalculateHorizontalMovementVector();   
-        isGrounded = Physics.Raycast(transform.position, Vector3.down, jumpDist);
+        HandleInput();
 
-        MyInput();
+        if (currentState == PlayerState.Paused)
+            return;
 
-        if (prevGrounded != isGrounded && prevGrounded == true)
+        // ===== MOVEMENT INPUT =====
+        input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")).normalized;
+
+        // ===== GROUND CHECK =====
+        isGrounded = Physics.Raycast(transform.position, Vector3.down, groundCheckDistance, groundLayer);
+
+        if (isGrounded)
+            coyoteTimer = coyoteTime;
+        else
+            coyoteTimer -= Time.deltaTime;
+
+        // ===== JUMP / CLIMB INPUT =====
+        if (Input.GetKeyDown(KeyCode.Space))
         {
-            StartCoroutine(CoyoteTime());
+            if (currentState == PlayerState.Climbing)
+            {
+                ExitClimb();
+            }
+            else if (coyoteTimer > 0f && currentState == PlayerState.Normal)
+            {
+                Jump();
+            }
+            else if (!isGrounded && currentState == PlayerState.Normal)
+            {
+                TryClimb();
+            }
         }
-
-        prevGrounded = isGrounded;
-
-        verticalMovement = CalculateVerticalMovementVector(canJump);
-
-        Debug.DrawRay(transform.position, -transform.up * jumpDist, Color.blanchedAlmond);
-        
     }
 
-    // FixedUpdate is called every fixed amount of DeltaTime 
-    // Default: 20ms
     void FixedUpdate()
     {
-        if (Input.GetKey(invertKey) && !isInvert)
+        if (currentState != PlayerState.Normal)
         {
-            playerTransform.Rotate(0f, 180f, 0f);
-            direction = -1;
-            isInvert = true;
-        }
-        else if (!Input.GetKey(invertKey) && isInvert)
-        {
-            playerTransform.Rotate(0f, 180f, 0f);
-            direction = 1;
-            isInvert = false;
+            playerRB.linearVelocity = new Vector3(0f, playerRB.linearVelocity.y, 0f);
+            return;
         }
 
+        Move();
+    }
 
+    // ===== MOVEMENT =====
+    void Move()
+    {
         Vector3 forward = cameraTransform.forward;
         forward.y = 0f;
         forward.Normalize();
@@ -105,13 +136,13 @@ public class PlayerMovement : MonoBehaviour, IDamageable
         right.y = 0f;
         right.Normalize();
 
-        Vector3 movement = direction * forward * horizontalMovement.y + direction * right * horizontalMovement.x;
+        Vector3 moveDir = forward * input.y + right * input.x;
+        Vector3 desiredVelocity = moveDir * velocityScaling;
 
-
-        Vector3 desiredVelocity = movement;
         Vector3 currentVelocity = playerRB.linearVelocity;
+        Vector3 currentHorizontal = new Vector3(currentVelocity.x, 0f, currentVelocity.z);
 
-        Vector3 velocityDiff = desiredVelocity - new Vector3(currentVelocity.x, 0f, currentVelocity.z);
+        Vector3 velocityDiff = desiredVelocity - currentHorizontal;
 
         if (verticalMovement > 0f && currentPuase < 0)
         {
@@ -137,12 +168,8 @@ public class PlayerMovement : MonoBehaviour, IDamageable
         playerRB.AddForce(force, ForceMode.Acceleration);
     }
 
-    /* 
-     * Function Calculates player movement vector in the x and z axis 
-     * Input: None 
-     * Ouput: 2d vector representing the velocity of the player in the x and z axis 
-     */
-    private Vector2 CalculateHorizontalMovementVector()
+    // ===== JUMP =====
+    void Jump()
     {
         if (!canMove)
         {
@@ -158,16 +185,25 @@ public class PlayerMovement : MonoBehaviour, IDamageable
             return prevMovement *= isGrounded ? 1 : airMovement;
         }
 
-        float xAxis = Input.GetAxisRaw("Horizontal");
-        float zAxis = Input.GetAxisRaw("Vertical");
+    // ===== CLIMB =====
+    void TryClimb()
+    {
+        RaycastHit hit;
 
-        bool shiftFlag = Input.GetKey(KeyCode.LeftShift);
-        float shiftScaling = shiftFlag ? shiftSpeed : 1f;
+        if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out hit, climbRange))
+        {
+            //ClimbPoint climb = hit.collider.GetComponentInParent<ClimbPoint>();
 
-        Vector2 res = new Vector2(xAxis, zAxis);
+            //if (climb != null)
+            //{
+            //    EnterClimb(climb);
+            //}
+        }
+    }
 
-        res.Normalize();
-        res *= velocityScaling * shiftScaling;
+    //void EnterClimb(ClimbPoint climb)
+    //{
+    //    currentState = PlayerState.Climbing;
 
         if (!isGrounded)
             res *= airMovement;
@@ -184,67 +220,57 @@ public class PlayerMovement : MonoBehaviour, IDamageable
         
         prevMovement = res;
 
-        return res;
-    }
+    //    transform.position = climb.snapPosition;
+    //    transform.forward = -climb.climbNormal;
+    //}
 
-    /*
-     * Function calculates the vertical velocity of the player
-     * Input: None
-     * Output: float velocity
-     */
-    private float CalculateVerticalMovementVector(bool grounded)
+    void ExitClimb()
     {
-        if (!canMove)
-            return 0f;
-            
-        if (Input.GetKey(KeyCode.Space) && grounded) { return jumpVelocity; }
+        currentState = PlayerState.Normal;
 
-        if (Input.GetKey(KeyCode.Space) && !grounded)
-            StartCoroutine(JumpBuffer());
+        playerRB.useGravity = true;
 
-        return 0f;
+        Vector3 jumpDir = (cameraTransform.forward + Vector3.up).normalized;
+        playerRB.AddForce(jumpDir * jumpForce, ForceMode.Impulse);
     }
 
-    IEnumerator JumpBuffer()
+    // ===== INPUT SYSTEM =====
+    void HandleInput()
     {
-        float time = jumpBuffer;
+        // CASTING
+        if (Input.GetKeyDown(KeyCode.LeftControl) && currentState == PlayerState.Normal)
+            EnterCasting();
 
-        while (time > 0)
-        {
-            yield return null;
+        if (Input.GetKeyUp(KeyCode.LeftControl) && currentState == PlayerState.Casting)
+            ExitCasting();
 
-            time -= Time.deltaTime;
+        // OBJECT VIEW
+        if (Input.GetKeyDown(KeyCode.F) &&
+            (currentState == PlayerState.Normal || currentState == PlayerState.Viewing))
+            ToggleObject();
 
-            if (isGrounded)
-            {
-                verticalMovement = jumpVelocity;
-            }
-        } 
+        // PAUSE
+        if (Input.GetKeyDown(KeyCode.Tab) &&
+            (currentState == PlayerState.Normal || currentState == PlayerState.Paused))
+            TogglePause();
     }
-    IEnumerator CoyoteTime()
+
+    // ===== CASTING =====
+    void EnterCasting()
     {
-        float time = coyoteTime;
+        currentState = PlayerState.Casting;
 
-        while (time > 0)
-        {
-            yield return null;
+        Time.timeScale = 0.5f;
+        DrawGlyph.Instance.casting = true;
+        cam.casting = true;
 
-            time -= Time.deltaTime;
-
-            canJump = true;
-
-            if (Input.GetKey(KeyCode.Space))
-                break;
-        }
-
-        canJump = isGrounded; 
+        Cursor.lockState = CursorLockMode.None;
+        SetCursorToCenter();
     }
 
-    void SetCursorToCenter()
+    void ExitCasting()
     {
-        Vector2 screenCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
-        Mouse.current.WarpCursorPosition(screenCenter);
-    }
+        currentState = PlayerState.Normal;
 
     public void MyInput()
     {
@@ -272,34 +298,25 @@ public class PlayerMovement : MonoBehaviour, IDamageable
             GameUI.Instance.currentState = GameUI.UIState.NotCasting;
         }
 
-        if (Input.GetKeyDown(KeyCode.F) && (GameUI.Instance.currentState == GameUI.UIState.NotCasting || GameUI.Instance.currentState == GameUI.UIState.Viewing))
-        {
-            ToggleObject();
-        }
-        
-        if (Input.GetKeyDown(KeyCode.Tab) && (GameUI.Instance.currentState == GameUI.UIState.NotCasting || GameUI.Instance.currentState == GameUI.UIState.Paused))
-        {
-            TogglePause();
-        }
+        SetCursorToCenter();
     }
 
+    // ===== OBJECT =====
     void ToggleObject()
     {
+        bool selecting = !PlayerAnimation.Instance.selecting;
+
+        PlayerAnimation.Instance.selecting = selecting;
+        PlayerAnimation.Instance.Object(selecting);
+
         ObjectUI.Instance.SelectObject(ObjectUI.Instance.baseImage);
 
-        PlayerAnimation.Instance.selecting = !PlayerAnimation.Instance.selecting;
-        PlayerAnimation.Instance.Object(PlayerAnimation.Instance.selecting);
+        currentState = selecting ? PlayerState.Viewing : PlayerState.Normal;
 
-        if (PlayerAnimation.Instance.selecting)
-            GameUI.Instance.currentState = GameUI.UIState.Viewing;
-        else
-            GameUI.Instance.currentState = GameUI.UIState.NotCasting;
-
-        cam.casting = PlayerAnimation.Instance.selecting;
-
-        canMove = !canMove;
+        cam.casting = selecting;
     }
 
+    // ===== PAUSE =====
     public void TogglePause()
     {
         canMove = !canMove;
@@ -308,9 +325,15 @@ public class PlayerMovement : MonoBehaviour, IDamageable
         if (GameUI.Instance.currentState == GameUI.UIState.Paused || GameUI.Instance.currentState == GameUI.UIState.Settings)
             GameUI.Instance.currentState = GameUI.UIState.NotCasting;
         else
-            GameUI.Instance.currentState = GameUI.UIState.Paused;
+        {
+            currentState = PlayerState.Paused;
+            Time.timeScale = 0f;
+        }
+
+        cam.casting = (currentState == PlayerState.Paused);
     }
 
+    // ===== DAMAGE =====
     public void Damage(float damage)
     {
         PlayerStats.Instance.Health -= damage;
