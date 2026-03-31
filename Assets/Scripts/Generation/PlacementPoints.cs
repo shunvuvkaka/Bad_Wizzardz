@@ -25,7 +25,9 @@ public class PlacementPoints : MonoBehaviour
     [SerializeField] private float roofMaxDist = 200;
     [SerializeField] private int frequency = 200;
     public float spawnChane;
-    public int maxEnemies;
+    public int baseEnemies;
+    public float enemyScaling = 1;
+    [SerializeField] private int maxEnemies;
     [Header("Debug")]
     [SerializeField] private bool debugLines = false;
     [SerializeField] private bool reccomendedDistances = true;
@@ -73,6 +75,8 @@ public class PlacementPoints : MonoBehaviour
                 enemies.Add(enemy);
             }
         }
+
+        maxEnemies = Mathf.RoundToInt(baseEnemies * Mathf.Log10(Road.Instance.globalIndex * enemyScaling));
     }
 
     public void Propify(Vector3[] points, Transform parent, bool ground)

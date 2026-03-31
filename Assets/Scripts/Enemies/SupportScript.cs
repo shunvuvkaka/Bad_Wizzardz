@@ -16,6 +16,9 @@ public class SupportScript : Enemy, IDamageable
     private Transform player;
     private Animator animator; 
     public ParticleSystem particle;
+    public AudioSource hit;
+    public Vector2 pitchRange;
+    private EnemyAi ai;
 
     // Supporting
     public float TimeBetweenSupport;
@@ -164,17 +167,25 @@ public class SupportScript : Enemy, IDamageable
     {
         animator.SetTrigger("Attack");
         RandomBoost = Random.Range(0, 3);
+        ai = Enemy.GetComponent<EnemyAi>();
+
+        if (ai.health < ai.MaxHealth - HealthBoost)
+        {
+            ai.health += HealthBoost;
+        }
+
         if (RandomBoost == 1)
         {
+            ai.speedMod = SpeedBoost;
 
         }
         else if (RandomBoost == 2)
         {
-
+            ai.damageMod = DamageBoost;
         }
         else if (RandomBoost == 3) 
         {
-        
+            ai.cooldownMod = -0.5f;
         }
         else
         {
@@ -183,11 +194,20 @@ public class SupportScript : Enemy, IDamageable
     }
     public void Damage(float damage)
     {
+        hit.pitch = Random.Range(pitchRange.x * 10, pitchRange.y * 10) / 10;
+        hit.Play();
         animator.SetTrigger("Hit");
         health -= damage;
 
         if (health < 0)
-        {
+        {  
+            if (ai != null)
+            {
+                ai.speedMod = 0;
+                ai.damageMod = 0;
+                ai.cooldownMod = 0;
+            }
+            GameplayManager.Instance.addScore += 1000;
             particle.Play();
             PlacementPoints.Instance.enemies.Remove(gameObject);
             animator.SetTrigger("Dead");

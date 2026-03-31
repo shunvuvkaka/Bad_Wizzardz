@@ -9,6 +9,8 @@ public class GameplayManager : MonoBehaviour
     public GameObject barrier;
     public TMP_Text scoreText;
     public int score = 0;
+    public int addScore;
+    public int totalScore;
     public Road road {get; private set;}
     public static GameplayManager Instance;
     private AsyncOperation asyncLoad;
@@ -26,7 +28,7 @@ public class GameplayManager : MonoBehaviour
 
         DontDestroyOnLoad(gameObject);
 
-        StartCoroutine(LoadSceneAsync("MainLevel"));
+        //StartCoroutine(LoadSceneAsync("MainLevel"));
     }
     void Update()
     {
@@ -36,9 +38,10 @@ public class GameplayManager : MonoBehaviour
         barrier.transform.position = road.roadPoints[10];
         barrier.transform.rotation = Quaternion.FromToRotation(Vector3.right, road.pointNormals[10]);
 
-        scoreText.text = score.ToString();
+        scoreText.text = totalScore.ToString();
 
         score = road.globalIndex * 10;
+        totalScore = score + addScore;
     }
     public void LoadScene(string sceneName)
     {

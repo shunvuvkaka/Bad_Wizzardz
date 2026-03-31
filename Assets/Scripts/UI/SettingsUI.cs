@@ -1,9 +1,11 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class SettingsUI : MonoBehaviour
 {
     public TMP_Text volumeField;
+    public Slider volumeSlider;
     public TMP_Dropdown windowMode;
 
     public void AdjustWindow()
@@ -24,5 +26,17 @@ public class SettingsUI : MonoBehaviour
         }
 
         Screen.SetResolution(1920, 1080, mode);
+    }
+    public void AdjustVolume()
+    {
+        volumeField.text = volumeSlider.value.ToString();
+
+        AudioListener.volume = volumeSlider.value / 100;
+    }
+    public void Resume()
+    {
+        GameUI.Instance.currentState = GameUI.UIState.Paused;
+        PlayerMovement.Instance.TogglePause();
+        gameObject.SetActive(false);
     }
 }

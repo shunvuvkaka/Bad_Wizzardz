@@ -29,6 +29,7 @@ public class PlayerMovement : MonoBehaviour, IDamageable
     public int jumpPause;
     public float coyoteTime;
     public float airMovement;
+    public float walkAudioSpeed;
 
     [SerializeField] private bool isGrounded;
     private bool prevGrounded;
@@ -145,6 +146,15 @@ public class PlayerMovement : MonoBehaviour, IDamageable
     {
         if (!canMove)
         {
+            if (prevMovement != Vector2.zero && isGrounded)
+            {
+                PlayerAudio.Instance.isWalking = true;
+            }
+            else
+            {
+                PlayerAudio.Instance.isWalking = false;
+            }
+
             return prevMovement *= isGrounded ? 1 : airMovement;
         }
 
@@ -161,6 +171,16 @@ public class PlayerMovement : MonoBehaviour, IDamageable
 
         if (!isGrounded)
             res *= airMovement;
+        
+        if (res != Vector2.zero && isGrounded)
+        {
+            PlayerAudio.Instance.isWalking = true;
+            PlayerAudio.Instance.walkSpeed = shiftFlag ? walkAudioSpeed / shiftSpeed : walkAudioSpeed;
+        }
+        else
+        {
+            PlayerAudio.Instance.isWalking = false;
+        }
         
         prevMovement = res;
 
@@ -285,7 +305,7 @@ public class PlayerMovement : MonoBehaviour, IDamageable
         canMove = !canMove;
         cam.casting = !cam.casting;
 
-        if (GameUI.Instance.currentState == GameUI.UIState.Paused)
+        if (GameUI.Instance.currentState == GameUI.UIState.Paused || GameUI.Instance.currentState == GameUI.UIState.Settings)
             GameUI.Instance.currentState = GameUI.UIState.NotCasting;
         else
             GameUI.Instance.currentState = GameUI.UIState.Paused;

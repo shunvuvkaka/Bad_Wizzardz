@@ -12,12 +12,13 @@ public class EnemyAi : Enemy, IDamageable
     public Transform animHolder;
     public ParticleSystem particle;
     private Animator animator; 
-
+    public AudioSource hit;
+    public Vector2 pitchRange;
 
     public GameObject Fireballprefab;
 
 
-    public LayerMask whatIsGround, whatIsPlayer;
+    public LayerMask whatIsGround, whatIsPlayer, whatIsWall;
 
     // Patroling
     public Vector3 walkPoint;
@@ -37,6 +38,11 @@ public class EnemyAi : Enemy, IDamageable
     public float Offset;
     public float health;
     public float MaxHealth;
+
+    [Header("Ugrades")]
+    public float speedMod;
+    public float damageMod;
+    public float cooldownMod;
     private Vector3 direction;
 
     private void Awake()
@@ -55,9 +61,24 @@ public class EnemyAi : Enemy, IDamageable
 
     private void Update()
     {
-        //Check for sight and attack range
-        playerInSightRange = Physics.CheckSphere(transform.position, sightRange, whatIsPlayer);
-        playerInAttackRange = Physics.CheckSphere(transform.position, attackRange, whatIsPlayer);
+        Collider[] colliders = Physics.OverlapSphere(transform.position, sightRange / 2, whatIsPlayer);
+
+        foreach (Collider collider in colliders)
+        {
+            playerInSightRange = true;
+            Vector3 dir = (collider.transform.position - transform.position).normalized;
+            float dist = Vector3.Distance(collider.transform.position, transform.position);
+            RaycastHit hit;
+            Physics.Raycast(transform.position, dir, out hit, dist);
+
+            Debug.DrawRay(transform.position, dir * dist, Color.coral);
+
+            if (dist < attackRange / 2 && hit.transform.tag == "Player")
+            {
+                playerInAttackRange = true;
+                break;
+            }
+        }
 
         if (!playerInSightRange && !playerInAttackRange) 
         {
@@ -133,7 +154,7 @@ public class EnemyAi : Enemy, IDamageable
             Attack();
 
             AlreadyAttacked = true;
-            Invoke(nameof(ResetAttack), TimeBetweenAttacks);
+            Invoke(nameof(ResetAttack), TimeBetweenAttacks + cooldownMod);
         }
     }
 
@@ -148,12 +169,11 @@ public class EnemyAi : Enemy, IDamageable
         if (gameObject.tag == "Conjuration")
         {
             GameObject go = Instantiate(Fireballprefab, model.position + transform.forward * 2, Quaternion.LookRotation(direction));
-            Rigidbody attack = go.GetComponent<Rigidbody>();
             FireballDamage fireball = go.GetComponent<FireballDamage>();
 
-            fireball.damage = damage;
+            fireball.damage = damage + damageMod;
             fireball.player = Player;
-            fireball.speed = attackSpeed;
+            fireball.speed = attackSpeed + speedMod;
 
             Destroy(go, 5);
         }
@@ -167,10 +187,13 @@ public class EnemyAi : Enemy, IDamageable
 
     public void Damage(float damage)
     {
+        hit.pitch = Random.Range(pitchRange.x * 10, pitchRange.y * 10) / 10;
+        hit.Play();
         animator.SetTrigger("Hit");
         health -= damage;
         if (health < 0)
         {
+            GameplayManager.Instance.addScore += 2000;
             particle.Play();
             PlacementPoints.Instance.enemies.Remove(gameObject);
             animator.SetTrigger("Dead");
