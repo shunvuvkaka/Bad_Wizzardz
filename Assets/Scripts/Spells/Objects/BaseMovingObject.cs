@@ -21,7 +21,7 @@ public abstract class BaseMovingObject : MonoBehaviour
     {
         IDamageable damageable;
 
-        if (collision.gameObject.TryGetComponent<IDamageable>(out damageable))
+        if (collision.gameObject.TryGetComponent<IDamageable>(out damageable) && collision.transform.tag != "Player")
         {
             damageable.Damage(damage);
         }

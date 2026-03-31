@@ -12,23 +12,29 @@ public class PlacementPoints : MonoBehaviour
     [Header("Props")]
     public GameObject[] terrainProps;
     public GameObject[] roofProps;
+    public GameObject[] enemiePrefabs;
     [Header("Paramaters")]
     [SerializeField] private float terrainChance = 0.15f;
     [SerializeField] private float roofChance = 0.15f;
     [SerializeField] private float minSpacing = 1f;
-    [SerializeField] private int terrainLayer;
-    [SerializeField] private int roofLayer;
+    [SerializeField] private LayerMask terrainLayer;
+    [SerializeField] private LayerMask roofLayer;
     [Header("Enemies")]
     [SerializeField] private float minDist = 20;
     [SerializeField] private float groundMaxDist = 200;
     [SerializeField] private float roofMaxDist = 200;
     [SerializeField] private int frequency = 200;
+    public float spawnChane;
+    public int baseEnemies;
+    public float enemyScaling = 1;
+    [SerializeField] private int maxEnemies;
     [Header("Debug")]
     [SerializeField] private bool debugLines = false;
     [SerializeField] private bool reccomendedDistances = true;
     private int currentInt;
     public List<Vector3> terrainSpanws = new List<Vector3>();
     public List<Vector3> roofSpawns = new List<Vector3>();
+    public List<GameObject> enemies = new List<GameObject>();
     public static PlacementPoints Instance;
 
     void Awake()
@@ -59,13 +65,25 @@ public class PlacementPoints : MonoBehaviour
             foreach (Vector3 point in roofSpawns)
                 Debug.DrawRay(point, Vector3.up * 2, Color.darkSalmon);
         }
+
+        foreach (Vector3 point in terrainSpanws)
+        {
+            if (UnityEngine.Random.value < spawnChane && enemies.Count < maxEnemies)
+            {
+                GameObject enemy = Instantiate(enemiePrefabs[UnityEngine.Random.Range(0, 2)], point + transform.up * 2, Quaternion.identity);
+
+                enemies.Add(enemy);
+            }
+        }
+
+        maxEnemies = Mathf.RoundToInt(baseEnemies * Mathf.Log10(Road.Instance.globalIndex * enemyScaling));
     }
 
     public void Propify(Vector3[] points, Transform parent, bool ground)
     {
         foreach (Vector3 point in points)
         {
-            Collider[] colliders = Physics.OverlapSphere(point, minSpacing / 2, ground ? terrainLayer : roofLayer);
+            Collider[] colliders = Physics.OverlapSphere(point, minSpacing / 2, ground ? ~terrainLayer : ~roofLayer);
 
             if (colliders.Length == 0)
             {

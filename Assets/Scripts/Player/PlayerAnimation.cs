@@ -16,6 +16,7 @@ public class PlayerAnimation : MonoBehaviour
     }
     public void Hit()
     {
+        PlayerAudio.Instance.Hit();
         playerAnimator.SetTrigger("Hit");
     }
     public void Dead()
@@ -26,6 +27,7 @@ public class PlayerAnimation : MonoBehaviour
     }
     public void Spell()
     {
+        PlayerAudio.Instance.Spell();
         playerAnimator.SetTrigger("Spell");
     }
     public void Object(bool isSelecting)

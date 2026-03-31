@@ -131,7 +131,7 @@ GameObject:
   - component: {fileID: 162894222}
   - component: {fileID: 162894221}
   - component: {fileID: 162894220}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: Floor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -244,7 +244,7 @@ GameObject:
   - component: {fileID: 411105689}
   m_Layer: 0
   m_Name: Enemy
-  m_TagString: Untagged
+  m_TagString: Conjuration
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -258,7 +258,7 @@ Transform:
   m_GameObject: {fileID: 411105686}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -21.4, y: 0.074, z: 0.4515}
+  m_LocalPosition: {x: -7, y: 2.96, z: 4.71}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -279,19 +279,29 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   agent: {fileID: 411105689}
   Player: {fileID: 1282802644}
+  model: {fileID: 1067758867}
+  WarningPrefab: {fileID: 0}
+  RockPrefab: {fileID: 0}
+  Fireballprefab: {fileID: 6327331144317257358, guid: b4c1ad4814354ed40a48cfb7b68a4535, type: 3}
   whatIsGround:
     serializedVersion: 2
-    m_Bits: 128
+    m_Bits: 8
   whatIsPlayer:
     serializedVersion: 2
-    m_Bits: 256
+    m_Bits: 64
   walkPoint: {x: 0, y: 0, z: 0}
   walkPointRange: 5
+  maxDist: 100
   TimeBetweenAttacks: 5
+  damage: 10
   sightRange: 20
   attackRange: 10
   playerInSightRange: 0
   playerInAttackRange: 0
+  attackSpeed: 200
+  Offset: 0
+  health: 0
+  MaxHealth: 100
 --- !u!195 &411105689
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -413,8 +423,7 @@ Transform:
   m_LocalPosition: {x: -7.12064, y: 1.06984, z: -2.59973}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 949061946}
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &753943336
@@ -453,7 +462,7 @@ MonoBehaviour:
   m_Center: {x: 0, y: 2, z: 0}
   m_LayerMask:
     serializedVersion: 2
-    m_Bits: 128
+    m_Bits: 4294967295
   m_UseGeometry: 0
   m_DefaultArea: 0
   m_GenerateLinks: 0
@@ -475,7 +484,7 @@ Transform:
   m_GameObject: {fileID: 753943336}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.37, y: 0.01747, z: -2.18336}
+  m_LocalPosition: {x: -3.37, y: 0.28, z: -2.18336}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -494,7 +503,7 @@ GameObject:
   - component: {fileID: 949061944}
   - component: {fileID: 949061948}
   - component: {fileID: 949061949}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Main Camera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
@@ -569,11 +578,11 @@ Transform:
   m_GameObject: {fileID: 949061943}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 7.12064, y: -0.069839954, z: -7.40027}
+  m_LocalPosition: {x: 7, y: 0.855, z: -6.91504}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 705586323}
+  m_Father: {fileID: 1282802644}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &949061948
 MonoBehaviour:
@@ -628,26 +637,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 949061943}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dc8f6a2d11c79634886855d0e5fcf86a, type: 3}
+  m_Script: {fileID: 11500000, guid: bf15d425346c9dc4cb44683638b3b416, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MoveCamera
-  Player: {fileID: 1282802644}
---- !u!1 &992384425 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 8677224661522050958, guid: 7ccc28376900e324a8eee7cb5e3b9938, type: 3}
-  m_PrefabInstance: {fileID: 1604095130}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &992384427 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1328760649339507354, guid: 7ccc28376900e324a8eee7cb5e3b9938, type: 3}
-  m_PrefabInstance: {fileID: 1604095130}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 992384425}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1b85ab22042fb3346badf2e9d8637ffa, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerCamera
+  casting: 0
 --- !u!4 &992384428 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6814129050272935569, guid: 7ccc28376900e324a8eee7cb5e3b9938, type: 3}
@@ -681,7 +674,7 @@ Transform:
   m_GameObject: {fileID: 1067758866}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -767,11 +760,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1067758866}
   m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &1090751328 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 144654854272650080, guid: 1ec4d50304281ec47bd6f2135ca608d4, type: 3}
-  m_PrefabInstance: {fileID: 529538468}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1238173671
 GameObject:
   m_ObjectHideFlags: 0
@@ -784,7 +772,7 @@ GameObject:
   - component: {fileID: 1238173675}
   - component: {fileID: 1238173674}
   - component: {fileID: 1238173673}
-  m_Layer: 8
+  m_Layer: 6
   m_Name: PlayerModel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -898,9 +886,7 @@ GameObject:
   - component: {fileID: 1282802643}
   - component: {fileID: 1282802642}
   - component: {fileID: 1282802641}
-  - component: {fileID: 1282802645}
-  - component: {fileID: 1282802646}
-  m_Layer: 8
+  m_Layer: 6
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -920,12 +906,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerStats
   Health: 0
+  HealthRegen: 0
   MaxHealth: 100
-  Damage: 15
+  DamageMultiplier: 0
+  Mana: 0
+  ManaRegen: 0
+  MaxMana: 100
   Speed: 0
   MaxSpeed: 100
-  Mana: 0
-  MaxMana: 100
 --- !u!114 &1282802642
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -939,7 +927,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
   moveSpeed: 5
+  groundDrag: 0
   orientation: {fileID: 2144967733}
+  playerTransform: {fileID: 0}
+  cameraTransform: {fileID: 0}
+  cam: {fileID: 0}
+  shiftSpeed: 0
+  velocityScaling: 160
+  jumpVelocity: 9.81
+  airFriction: 0
+  standardFriction: 0
+  fallingGravity: 0
+  jumpDist: 0
+  jumpBuffer: 0
+  coyoteTime: 0
+  airMovement: 0
+  isGrounded: 0
+  playerHeight: 0
+  whatIsGround:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!54 &1282802643
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -982,43 +989,9 @@ Transform:
   m_Children:
   - {fileID: 2144967733}
   - {fileID: 1238173672}
+  - {fileID: 949061946}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1282802645
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1282802639}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1139363412da19d41a89d8a1c351b918, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PotionSpawner
-  Potions:
-  - {fileID: 992384425}
-  - {fileID: 1090751328}
-  Player: {fileID: 1282802644}
-  ItemInteract: {fileID: 992384427}
-  YPosition: 0
-  timer: 0
-  Intervals: 3
---- !u!114 &1282802646
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1282802639}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf15d425346c9dc4cb44683638b3b416, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerCam
-  sensX: 20
-  sensY: 20
-  orientation: {fileID: 2144967733}
 --- !u!1 &1430368340
 GameObject:
   m_ObjectHideFlags: 0
@@ -1332,7 +1305,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2144967733}
-  m_Layer: 8
+  m_Layer: 6
   m_Name: Orientation
   m_TagString: Untagged
   m_Icon: {fileID: 0}

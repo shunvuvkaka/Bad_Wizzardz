@@ -12,6 +12,7 @@ public class GameUI : MonoBehaviour
     public GameObject notCasting;
     public GameObject paused;
     public GameObject dead;
+    public GameObject settings;
     [Header("Sliders")]
     public Slider manaOver;
     public Slider manaUnder;
@@ -28,7 +29,8 @@ public class GameUI : MonoBehaviour
         NotCasting,
         Viewing,
         Paused,
-        Dead
+        Dead, 
+        Settings
     }
 
     public UIState currentState;
@@ -70,7 +72,14 @@ public class GameUI : MonoBehaviour
                 notCasting.SetActive(false);
                 paused.SetActive(true);
                 break;
+            case UIState.Settings:
+                paused.SetActive(false);
+                settings.SetActive(true);
+                break;
             case UIState.Dead:
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+                PlayerCamera.Instance.casting = true;
                 casting.SetActive(false);
                 notCasting.SetActive(false);
                 alwaysActive.SetActive(false);

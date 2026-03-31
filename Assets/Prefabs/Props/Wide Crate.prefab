@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7091154735439838357}
   - component: {fileID: 8638699416924510546}
+  - component: {fileID: 7123384486956197279}
   m_Layer: 0
   m_Name: Wide Crate
   m_TagString: Object
@@ -54,6 +55,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 3.205204, y: 0.9966683, z: 1}
   m_Center: {x: 0.0030500293, y: 0.32249358, z: 0}
+--- !u!208 &7123384486956197279
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3661804902960578489}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 1.75, y: 0.5, z: 0.5}
+  m_MoveThreshold: 0.1
+  m_Carve: 0
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0.3, z: 0}
+  m_TimeToStationary: 0.5
 --- !u!1001 &5899749096823275543
 PrefabInstance:
   m_ObjectHideFlags: 0

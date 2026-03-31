@@ -101,7 +101,7 @@ public class Roofs : MonoBehaviour
 
             GameObject go = new GameObject("Roof");
             go.transform.parent = roofParent;
-            go.layer = 6;
+            go.layer = 3;
 
             MeshFilter mf = go.AddComponent<MeshFilter>();
             MeshRenderer mr = go.AddComponent<MeshRenderer>();

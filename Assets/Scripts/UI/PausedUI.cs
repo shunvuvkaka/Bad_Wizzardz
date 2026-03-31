@@ -12,6 +12,8 @@ public class PausedUI : MonoBehaviour
     }
     public void Settings()
     {
-        //TODO
+        gameObject.SetActive(false);
+        GameUI.Instance.currentState = GameUI.UIState.Settings;
+        GameUI.Instance.settings.SetActive(true);
     }
 }

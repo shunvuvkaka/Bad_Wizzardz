@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody))]
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : MonoBehaviour, IDamageable
 {
     // ===== STATE =====
     public enum PlayerState
@@ -24,10 +24,36 @@ public class PlayerMovement : MonoBehaviour
     private Rigidbody playerRB;
     public static PlayerMovement Instance;
 
-    // ===== MOVEMENT =====
-    public float velocityScaling = 10f;
-    public float accelerationGround = 20f;
-    public float accelerationAir = 8f;
+    public float shiftSpeed;
+
+    private Vector2 horizontalMovement;
+    private float verticalMovement;
+    public float velocityScaling = 160f;
+    public float jumpVelocity = 9.81f;
+    public float airFriction;
+    public float standardFriction;
+    public float fallingGravity;
+    public float jumpDist;
+    public float jumpBuffer;
+    public int jumpPause;
+    public float coyoteTime;
+    public float airMovement;
+    public float walkAudioSpeed;
+
+    [SerializeField] private bool isGrounded;
+    private bool prevGrounded;
+    private bool canJump;
+    private bool canMove = true;
+    private Vector2 prevMovement;
+    private readonly float acceleration = 0.25f; //tweak for difference in the "weight" of key presses on velocity and also speed 
+
+    public float playerHeight;
+    public LayerMask whatIsGround;
+
+    private bool isInvert = false;
+    private readonly KeyCode invertKey = KeyCode.Q;
+    private int direction = 1;
+    private int currentPuase = -1;
 
     // ===== JUMP =====
     public float jumpForce = 8f;
@@ -118,21 +144,46 @@ public class PlayerMovement : MonoBehaviour
 
         Vector3 velocityDiff = desiredVelocity - currentHorizontal;
 
-        float accel = isGrounded ? accelerationGround : accelerationAir;
+        if (verticalMovement > 0f && currentPuase < 0)
+        {
+            playerRB.linearVelocity += Vector3.up * verticalMovement;
+            isGrounded = false;
+            Debug.Log("jump force applied");
+            currentPuase = jumpPause;
+        }
 
-        Vector3 force = Vector3.ClampMagnitude(velocityDiff / Time.fixedDeltaTime, accel);
+        if (!isGrounded)
+        {
+            playerRB.linearDamping = airFriction;
+            playerRB.AddForce(Physics.gravity * fallingGravity, ForceMode.Acceleration);
+        }
+        else
+        {
+            playerRB.linearDamping = standardFriction;
+        }
 
+        currentPuase --;
+
+        Vector3 force = velocityDiff * acceleration;
         playerRB.AddForce(force, ForceMode.Acceleration);
     }
 
     // ===== JUMP =====
     void Jump()
     {
-        coyoteTimer = 0f;
+        if (!canMove)
+        {
+            if (prevMovement != Vector2.zero && isGrounded)
+            {
+                PlayerAudio.Instance.isWalking = true;
+            }
+            else
+            {
+                PlayerAudio.Instance.isWalking = false;
+            }
 
-        playerRB.linearVelocity = new Vector3(playerRB.linearVelocity.x, 0f, playerRB.linearVelocity.z);
-        playerRB.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-    }
+            return prevMovement *= isGrounded ? 1 : airMovement;
+        }
 
     // ===== CLIMB =====
     void TryClimb()
@@ -154,8 +205,20 @@ public class PlayerMovement : MonoBehaviour
     //{
     //    currentState = PlayerState.Climbing;
 
-    //    playerRB.linearVelocity = Vector3.zero;
-    //    playerRB.useGravity = false;
+        if (!isGrounded)
+            res *= airMovement;
+        
+        if (res != Vector2.zero && isGrounded)
+        {
+            PlayerAudio.Instance.isWalking = true;
+            PlayerAudio.Instance.walkSpeed = shiftFlag ? walkAudioSpeed / shiftSpeed : walkAudioSpeed;
+        }
+        else
+        {
+            PlayerAudio.Instance.isWalking = false;
+        }
+        
+        prevMovement = res;
 
     //    transform.position = climb.snapPosition;
     //    transform.forward = -climb.climbNormal;
@@ -209,9 +272,31 @@ public class PlayerMovement : MonoBehaviour
     {
         currentState = PlayerState.Normal;
 
-        Time.timeScale = 1f;
-        DrawGlyph.Instance.casting = false;
-        cam.casting = false;
+    public void MyInput()
+    {
+        if (GameUI.Instance.currentState == GameUI.UIState.Dead)
+        {
+            return;
+        }
+        if (Input.GetKeyDown(KeyCode.LeftControl) && GameUI.Instance.currentState == GameUI.UIState.NotCasting)
+        {
+            Time.timeScale = 0.5f;
+            DrawGlyph.Instance.casting = true;
+            cam.casting = true;
+            canMove = false;
+            Cursor.lockState = CursorLockMode.None;
+            SetCursorToCenter();
+            GameUI.Instance.currentState = GameUI.UIState.Casting;
+        }
+        if (Input.GetKeyUp(KeyCode.LeftControl) && GameUI.Instance.currentState == GameUI.UIState.Casting)
+        {
+            SetCursorToCenter();
+            Time.timeScale = 1f;
+            DrawGlyph.Instance.casting = false;
+            cam.casting = false;
+            canMove = true;
+            GameUI.Instance.currentState = GameUI.UIState.NotCasting;
+        }
 
         SetCursorToCenter();
     }
@@ -234,11 +319,11 @@ public class PlayerMovement : MonoBehaviour
     // ===== PAUSE =====
     public void TogglePause()
     {
-        if (currentState == PlayerState.Paused)
-        {
-            currentState = PlayerState.Normal;
-            Time.timeScale = 1f;
-        }
+        canMove = !canMove;
+        cam.casting = !cam.casting;
+
+        if (GameUI.Instance.currentState == GameUI.UIState.Paused || GameUI.Instance.currentState == GameUI.UIState.Settings)
+            GameUI.Instance.currentState = GameUI.UIState.NotCasting;
         else
         {
             currentState = PlayerState.Paused;
@@ -253,16 +338,11 @@ public class PlayerMovement : MonoBehaviour
     {
         PlayerStats.Instance.Health -= damage;
 
-        if (PlayerStats.Instance.Health <= 0)
+        PlayerAnimation.Instance.Hit();
+
+        if (PlayerStats.Instance.Health < 0)
         {
             PlayerAnimation.Instance.Dead();
         }
-    }
-
-    // ===== UTILITY =====
-    public void SetCursorToCenter()
-    {
-        Vector2 screenCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
-        Mouse.current.WarpCursorPosition(screenCenter);
     }
 }

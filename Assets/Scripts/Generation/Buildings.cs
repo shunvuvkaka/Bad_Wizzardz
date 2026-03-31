@@ -9,6 +9,8 @@ public class Buildings : MonoBehaviour
     public float maxDist = 30;
     public float minBreadth = 5;
     public Material[] buildingMats;
+    public Building[] preBuildingsR;
+    public Building[] preBuildingsL;
     public PhysicsMaterial buildingPhysics;
     [Header("Building Size and Spacing")]
     public Vector2Int widthRange = new Vector2Int(5, 25);
@@ -126,10 +128,10 @@ public class Buildings : MonoBehaviour
     }
     void InitialBuildings(ref int index, bool right)
     {
-        //randomly decide width, space and height
-        int width = Mathf.RoundToInt(Random.Range(widthRange.x, widthRange.y));
+        Building building = right ? preBuildingsR[Random.Range(0, preBuildingsR.Length)] : preBuildingsL[Random.Range(0, preBuildingsL.Length)];
+
+        int width = building.size.x;
         int space = Mathf.RoundToInt(Random.Range(spaceRange.x, spaceRange.y));
-        float height = Random.Range(heightRange.x, heightRange.y);
 
         BuildPoints build = new BuildPoints
         {
@@ -151,8 +153,46 @@ public class Buildings : MonoBehaviour
             build.ln = normals[index + width];
         }
 
+        float backDist = CalculateDistance(build, float.MaxValue);
+
+        if (backDist - roadDist > building.size.y)
+        {
+            BasePoints basePoints1 = new BasePoints
+            (
+                build.fp + build.fn * building.size.y,
+                build.lp + build.ln * building.size.y,
+                build.fp + build.fn * roadDist,
+                build.lp + build.ln * roadDist
+            );
+
+            PrefabConstruct(building, basePoints1, build.fn, build.ln, right);
+
+            index = index + width + space;
+
+            return;
+        }
+
+        // !!FALLBACK FOR INVALID PREBUILT!!
+
+        //randomly decide width and height
+        width = Mathf.RoundToInt(Random.Range(widthRange.x, widthRange.y));
+        float height = Random.Range(heightRange.x, heightRange.y);
+
+        //same as points but for normals
+        if (right)
+        {
+            //negative sign flipps normal to right
+            build.fn = -normals[index];
+            build.ln = -normals[index + width];
+        }
+        else
+        {
+            build.fn = normals[index];
+            build.ln = normals[index + width];
+        }
+
         //calulating farthest edge distance
-        float backDist = CalculateDistance(build);
+        backDist = CalculateDistance(build, maxDist);
 
         //break if building is too small/invalid
         if (backDist - roadDist < minBreadth)
@@ -196,6 +236,35 @@ public class Buildings : MonoBehaviour
         {
             BuildPoints build = builds[j];
 
+            Building building = right ? preBuildingsR[Random.Range(0, preBuildingsR.Length)] : preBuildingsL[Random.Range(0, preBuildingsL.Length)];
+
+            if (Vector3.Distance(build.fp, build.lp) > building.size.x)
+            {
+                float buildDist = CalculateDistance(build, float.MaxValue);
+
+                if (buildDist - buildingGap > building.size.y)
+                {
+                    BasePoints basePoints1 = new BasePoints
+                    (
+                        build.fp + build.fn * building.size.y,
+                        build.lp + build.ln * building.size.y,
+                        build.fp + build.fn * buildingGap,
+                        build.lp + build.ln * buildingGap
+                    );
+
+                    float random = Random.Range(generationScope.x * 10, generationScope.y * 10) / 10;
+
+                    build.fn += new Vector3(random, 0, random);
+                    build.fn.Normalize();
+
+                    PrefabConstruct(building, basePoints1, build.fn, build.fn, right);
+
+                    continue;
+                }
+            }
+
+            // !!FALLBACK!! 
+
             //define original values before optimal search has began
             Vector3 normal = build.fn;
             Vector3 bfn = build.fn;
@@ -216,7 +285,7 @@ public class Buildings : MonoBehaviour
                 build.ln = (normal + new Vector3(i, 0, i)).normalized;
 
                 //calulating farthest edge distance
-                float dist = CalculateDistance(build);
+                float dist = CalculateDistance(build, maxDist);
 
                 //continue to next search attempt if building is guaranteed to be invalid
                 if (dist - buildingGap < minBreadth)
@@ -277,18 +346,18 @@ public class Buildings : MonoBehaviour
     }
 
     //helper function that returns how far the distance is, combining multiple checks
-    float CalculateDistance(BuildPoints build)
+    float CalculateDistance(BuildPoints build,float dist)
     {
         impoactCol = Color.black;
 
         //checks whether the intersect or collision of the back edge is closest
-        float iDist = IntersectDistance(build);
-        float rDist = RaycastDistance(build);
+        float iDist = IntersectDistance(build, dist);
+        float rDist = RaycastDistance(build, dist);
 
         return Mathf.Min(iDist, rDist);
     }
 
-    float IntersectDistance(BuildPoints build)
+    float IntersectDistance(BuildPoints build, float dist)
     {
         //convert from 3d plane to 2d xy plane
         Vector2 p = new Vector2(build.fp.x, build.fp.z);
@@ -302,7 +371,7 @@ public class Buildings : MonoBehaviour
 
         //parrallel case
         if (Mathf.Abs(rxs) < 0.01f)
-            return maxDist + roadDist;
+            return dist + roadDist;
 
         Vector2 qp = q - p;
 
@@ -312,7 +381,7 @@ public class Buildings : MonoBehaviour
 
         //check if an intersection will occur behind
         if (t < 0 || u < 0)
-            return maxDist + roadDist;
+            return dist + roadDist;
 
         //calculate how the road disposition affects vector
         Vector2 pqDir = (q - p).normalized;
@@ -339,10 +408,10 @@ public class Buildings : MonoBehaviour
         }
 
         //if the intersection is too far away, just return max distance
-        return maxDist + roadDist;
+        return dist + roadDist;
     }
 
-    float RaycastDistance(BuildPoints build)
+    float RaycastDistance(BuildPoints build, float dist)
     {
         RaycastHit pHit;
         RaycastHit qHit;
@@ -352,8 +421,8 @@ public class Buildings : MonoBehaviour
         build.lp += Vector3.up * 0.1f;
 
         //raycast from both points
-        Physics.Raycast(build.fp, build.fn, out pHit, maxDist + roadDist);
-        Physics.Raycast(build.lp, build.ln, out qHit, maxDist + roadDist);
+        Physics.Raycast(build.fp, build.fn, out pHit, dist + roadDist);
+        Physics.Raycast(build.lp, build.ln, out qHit, dist + roadDist);
 
         float min;
 
@@ -362,7 +431,7 @@ public class Buildings : MonoBehaviour
         //the distance of the one ray that hit,
         //or the minimum distance of both rays if they both hit
         if (pHit.collider == null && qHit.collider == null)
-            return maxDist + roadDist;
+            return dist + roadDist;
         else if (pHit.collider == null)
             min = qHit.distance;
         else if (qHit.collider == null)
@@ -399,6 +468,7 @@ public class Buildings : MonoBehaviour
         buildings.Add(new Vector2(basePoints.br.x, basePoints.br.z), go);
 
         go.transform.parent = buildingParent;
+        go.layer = 7;
 
         //adding components neccessary for collision and mesh rendering
         MeshFilter mf = go.AddComponent<MeshFilter>();
@@ -541,6 +611,36 @@ public class Buildings : MonoBehaviour
             Debug.DrawLine(basePoints.bl, topPoints.bl, Color.cyan, float.MaxValue);
             Debug.DrawLine(basePoints.tl, topPoints.tl, Color.cyan, float.MaxValue);
             Debug.DrawLine(basePoints.tr, topPoints.tr, Color.cyan, float.MaxValue);
+        }
+    }
+
+    void PrefabConstruct(Building building, BasePoints basePoints, Vector3 normalA, Vector3 normalB, bool right)
+    {
+        Vector3 average = ((normalA + normalB) / 2).normalized;
+        Quaternion rotation = Quaternion.LookRotation(average);
+
+        GameObject go = Instantiate(building.building, basePoints.bl, rotation);
+        go.transform.parent = buildingParent;
+
+        if (currGen < generations)
+        {
+            //create a new buildpoints just like what was done for the road, but now with the meshes values instead!!!
+            BuildPoints bp = new BuildPoints
+            {
+                fp = basePoints.br,
+                lp = basePoints.tr,
+                fn = average,
+                ln = average
+            };
+
+            Debug.DrawRay(basePoints.br, average * 5, Color.aliceBlue, float.MaxValue);
+            Debug.DrawRay(basePoints.tr, average * 5, Color.aliceBlue, float.MaxValue);
+
+            //chooose which list to add to
+            if (right)
+                rBuilds.Add(bp);
+            else
+                lBuilds.Add(bp);
         }
     }
 }

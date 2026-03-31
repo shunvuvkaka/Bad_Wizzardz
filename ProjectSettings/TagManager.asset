@@ -3,18 +3,22 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 3
-  tags: []
+  tags:
+  - Object
+  - Conjuration
+  - Spell
+  - Score
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Walkable
   - Water
   - UI
-  - 
-  - 
-  - 
-  - 
+  - Player
+  - Wall
+  - Attack
+  - Enemy
   - 
   - 
   - 
