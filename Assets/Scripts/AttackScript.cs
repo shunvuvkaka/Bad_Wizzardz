@@ -14,6 +14,7 @@ public class AttackScript : MonoBehaviour
 
     public Transform Player;
     public Rigidbody Rb;
+    public GameObject ReturnPos;
 
     public bool IsAttacking;
     public bool GoToPosition;
@@ -26,6 +27,7 @@ public class AttackScript : MonoBehaviour
     void Start()
     {
         playerStats = GameObject.Find("Player").GetComponent<PlayerStats>();
+        Player = GameObject.Find("Player").transform;
         IsAttacking = false;
         GoToPosition = false;
     }
@@ -35,11 +37,14 @@ public class AttackScript : MonoBehaviour
     { 
         position = transform.position;
         Target = new Vector3(Player.position.x, Player.position.y, Player.position.z);
+        ReturnTarget = ReturnPos.transform.position;
         StartCoroutine(FollowPlayer());
         // Swoop down on player
         if (Player.position.y >= 2)
         {
             StartCoroutine(AttackPlayer());
+            new WaitForSeconds(10);
+            StopCoroutine(AttackPlayer());
         }
         if (IsAttacking && GoToPosition) 
         {
@@ -62,6 +67,7 @@ public class AttackScript : MonoBehaviour
             // Apply damage
             playerStats.Health -= damage;
             GoToPosition = true;
+            IsAttacking = false;
         }
     }
     private IEnumerator AttackPlayer() 
@@ -84,7 +90,7 @@ public class AttackScript : MonoBehaviour
         while (true)
         {
             yield return new WaitForSeconds(20);
-            ReturnTarget = new Vector3(Player.position.x + Random.Range(0, 4), 10f, Player.position.z + Random.Range(-2, 4));
+
         }
     }
 }

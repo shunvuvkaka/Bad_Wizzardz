@@ -23,7 +23,7 @@ public class LightningScript : MonoBehaviour
         EnemyAi = GameObject.Find("EvocationWizard").GetComponent<EnemyAi>();
         playerStats = GameObject.Find("Player").GetComponent<PlayerStats>();
         Player = GameObject.Find("Player");
-        RockPrefab = GameObject.Find("Rock");
+        RockPrefab = GameObject.Find("Rock 1");
         AttackTimer = AttackIntervals;
     }
     private void Update()

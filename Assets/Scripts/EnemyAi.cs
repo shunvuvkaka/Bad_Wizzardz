@@ -37,6 +37,9 @@ public class EnemyAi : MonoBehaviour
     {
         Player = GameObject.Find("Player").transform;
         agent = GetComponent<NavMeshAgent>();
+        WarningPrefab = GameObject.Find("WarningCircle");
+        RockPrefab = GameObject.Find("Rock 1");
+        Fireballprefab = GameObject.Find("Fireball").GetComponent<Rigidbody>();
     }
 
     private void Update()
@@ -83,7 +86,7 @@ public class EnemyAi : MonoBehaviour
 
         walkPoint = new Vector3(transform.position.x + randomX, transform.position.y, transform.position.z + randomZ);
 
-        if (Physics.Raycast(walkPoint, -transform.up, 2f, whatIsGround)) walkPointSet = true;
+        if (Physics.Raycast(walkPoint, -transform.up, 2f, ~whatIsGround)) walkPointSet = true;
 
     }
 
@@ -101,7 +104,7 @@ public class EnemyAi : MonoBehaviour
         if (!AlreadyAttacked) 
         {
             // Attock
-
+            Debug.Log("Attack");
             Attack();
 
             AlreadyAttacked = true;
