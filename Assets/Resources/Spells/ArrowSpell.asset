@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b365fae563c1b186a7716b4b8b0f93e, type: 3}
+  m_Name: ArrowSpell
+  m_EditorClassIdentifier: Assembly-CSharp::ArrowSpell
+  manaCost: 15
+  healthCost: 10
+  arrow: {fileID: 6118269903908994952, guid: be341d9929027c0e7ae00024704e62a1, type: 3}
+  speed: 50
+  lifespan: 2
+  initialSpace: 2
