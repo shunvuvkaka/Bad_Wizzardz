@@ -2,91 +2,75 @@ using UnityEngine;
 
 public class SupportScript : Enemy, IDamageable
 {
-
+    [Header("References")]
     public Transform Enemy;
     public LayerMask whatIsEnemy;
-    // Patroling
-    public Vector3 walkPoint;
-    bool walkPointSet;
-    public float walkPointRange;
-    public float moveSpeed;
-    public Rigidbody rb;
-    public Transform animHolder;
     public LineRenderer lr;
-    private Transform player;
-    private Animator animator; 
-    public ParticleSystem particle;
-    public AudioSource hit;
-    public Vector2 pitchRange;
     private EnemyAi ai;
 
-    // Supporting
+    [Header("Stats")]
     public float TimeBetweenSupport;
     bool AlreadySupported;
-
-    // Stas
-    public float sightRange, SupportRange;
-    public bool EnemyInSightRange, EnemyInSupportRange;
     public float SupportSpeed;
     public float HealthBoost;
     public float SpeedBoost;
     public float DamageBoost;
-    public float maxHealth;
-    public float health;
-    public float maxDist;
 
     private float RandomBoost;
     bool moving = false;
-    void Awake()
+    protected override void Iniitialise()
     {
-        player = GameObject.Find("Player").transform;
+        base.Iniitialise();
+
         transform.position += Vector3.up * 10;
-        animator = animHolder.GetComponent<Animator>();
-        health = maxHealth;
     }
 
     private void FixedUpdate()
     {
-        //Check for sight and Support range
-        Collider[] colliders = Physics.OverlapSphere(transform.position, sightRange / 2, whatIsEnemy);
+        EnemyLogic();
+    }
 
-        foreach (Collider collider in colliders)
-        {
-            EnemyInSightRange = true;
-            Enemy = collider.transform;
-
-            if (Vector3.Distance(collider.transform.position, transform.position) < SupportRange / 2)
-            {
-                EnemyInSupportRange = true;
-                break;
-            }
-        }
-
-        if (!EnemyInSightRange && !EnemyInSupportRange)
-        {
-            lr.positionCount = 0;
-            Patroling();
-        }
-        if (EnemyInSightRange && !EnemyInSupportRange && Enemy != null)
-        {
-            lr.positionCount = 0;
-            ChaseEnemy();
-        }
-        if (EnemyInSightRange && EnemyInSupportRange && Enemy != null)
-        {
-            SupportEnemy();
-        }
+    protected override void EnemyLogic()
+    {
+        base.EnemyLogic();
 
         if (moving)
             Move(walkPoint);
         else
             animator.SetBool("Moving", false);
+    }
 
-        if (Vector3.Distance(transform.position, player.position) > maxDist)
+    protected override EnemyState Scan()
+    {
+        //Check for sight and Support range
+        EnemyState state = EnemyState.Patroling;
+        Collider[] colliders = Physics.OverlapSphere(transform.position, sightRange / 2, whatIsEnemy);
+
+        foreach (Collider collider in colliders)
         {
-            PlacementPoints.Instance.enemies.Remove(gameObject);
-            Destroy(gameObject);
+            Vector3 dir = (collider.transform.position - transform.position).normalized;
+            float dist = Vector3.Distance(collider.transform.position, transform.position);
+
+            Debug.DrawRay(transform.position, dir * dist, Color.deepPink);
+
+            if (Physics.Raycast(transform.position, dir, dist, ~whatIsEnemy))
+                continue;
+            
+            Enemy = collider.transform;
+
+            if (Enemy == null)
+                break;
+
+            state = EnemyState.Chasing;
+
+            if (dist < attackRange / 2)
+            {
+                state = EnemyState.Acting;
+                break;
+            }
         }
+
+        return state;
     }
     void Move(Vector3 movePoint)
     {
@@ -96,8 +80,10 @@ public class SupportScript : Enemy, IDamageable
         rb.AddForce(transform.forward * moveSpeed, ForceMode.Acceleration);
     }
 
-    private void Patroling()
+    protected override void Patroling()
     {
+        lr.positionCount = 0;
+
         if (!walkPointSet) 
         {
             moving = false;
@@ -122,7 +108,6 @@ public class SupportScript : Enemy, IDamageable
         float randomX = Random.Range(-walkPointRange, walkPointRange);
         float randomY = Random.Range(-walkPointRange, walkPointRange);
 
-
         walkPoint = new Vector3(transform.position.x + randomX, transform.position.y + randomY, transform.position.z + randomZ);
 
         Vector3 direction = (walkPoint - transform.position).normalized;
@@ -131,13 +116,15 @@ public class SupportScript : Enemy, IDamageable
 
     }
 
-    private void ChaseEnemy()
+    protected override void Chasing()
     {
+        lr.positionCount = 0;
+
         walkPoint = Enemy.position;
 
         moving = true;
     }
-    private void SupportEnemy()
+    protected override void Acting()
     {
         transform.LookAt(Enemy);
 
@@ -167,12 +154,9 @@ public class SupportScript : Enemy, IDamageable
     {
         animator.SetTrigger("Attack");
         RandomBoost = Random.Range(0, 3);
-        ai = Enemy.GetComponent<EnemyAi>();
-
-        if (ai.health < ai.MaxHealth - HealthBoost)
-        {
-            ai.health += HealthBoost;
-        }
+        
+        if (!Enemy.TryGetComponent<EnemyAi>(out EnemyAi ai))
+            return;
 
         if (RandomBoost == 1)
         {
@@ -183,13 +167,9 @@ public class SupportScript : Enemy, IDamageable
         {
             ai.damageMod = DamageBoost;
         }
-        else if (RandomBoost == 3) 
-        {
-            ai.cooldownMod = -0.5f;
-        }
         else
         {
-         //   Debug.LogError("Number not known");
+            ai.cooldownMod = -0.5f;
         }
     }
     public void Damage(float damage)
@@ -207,9 +187,9 @@ public class SupportScript : Enemy, IDamageable
                 ai.damageMod = 0;
                 ai.cooldownMod = 0;
             }
-            GameplayManager.Instance.addScore += 1000;
+            GameplayManager.Instance.addScore += scoreValue;
             particle.Play();
-            PlacementPoints.Instance.enemies.Remove(gameObject);
+            PlacementPoints.Instance.enemies.Remove(this);
             animator.SetTrigger("Dead");
             Destroy(gameObject, 1f);
         }

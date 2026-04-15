@@ -19,6 +19,7 @@ public class ChunkNavMesh : MonoBehaviour
     private List<NavMeshBuildMarkup> markups = new List<NavMeshBuildMarkup>();
 
     private HashSet<Chunk> activeChunks = new HashSet<Chunk>();
+    private Queue<Chunk> toBuild = new Queue<Chunk>();
 
     private Bounds pendingBounds;
     private bool hasPendingBounds;
@@ -41,7 +42,6 @@ public class ChunkNavMesh : MonoBehaviour
     {
         if (hasPendingBounds)
         {
-            rebuildTimer -= Time.deltaTime;
 
             if (rebuildTimer <= 0f)
             {
@@ -49,6 +49,8 @@ public class ChunkNavMesh : MonoBehaviour
                 hasPendingBounds = false;
             }
         }
+
+        rebuildTimer -= Time.deltaTime;
     }
 
     //call when a chunk loads
@@ -56,6 +58,9 @@ public class ChunkNavMesh : MonoBehaviour
     {
         if (activeChunks.Add(chunk))
         {
+            markups.Clear();
+            chunk.BuildSources(navMeshLayer, markups);
+
             QueueRebuild(chunk.WorldBounds);
         }
     }
@@ -90,22 +95,20 @@ public class ChunkNavMesh : MonoBehaviour
     // rebuild
     void RebuildNavMesh(Bounds bounds)
     {
-        //cancel previous build if still running
+        // Avoid overlapping builds
         if (currentBuildOperation != null && !currentBuildOperation.isDone)
-        {
-            currentBuildOperation = null;
-        }
+            return;
 
         sources.Clear();
 
-        /*
+        // Merge only relevant chunk sources
         foreach (var chunk in activeChunks)
         {
-            CollectSources(chunk.WorldBounds, sources);
+            if (chunk.WorldBounds.Intersects(bounds))
+            {
+                sources.AddRange(chunk.CachedSources);
+            }
         }
-        */
-
-        CollectSources(bounds, sources);
 
         currentBuildOperation = NavMeshBuilder.UpdateNavMeshDataAsync(
             navMeshData,
@@ -115,16 +118,5 @@ public class ChunkNavMesh : MonoBehaviour
         );
     }
 
-    //collect geometry from a chunk
-    void CollectSources(Bounds bounds, List<NavMeshBuildSource> sources)
-    {
-        NavMeshBuilder.CollectSources(
-        bounds,
-        navMeshLayer,
-        NavMeshCollectGeometry.PhysicsColliders,
-        0,
-        new List<NavMeshBuildMarkup>(),
-        sources
-    );
-}
+
 }

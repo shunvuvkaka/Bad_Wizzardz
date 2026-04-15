@@ -72,31 +72,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1da1213f37dafa43bab92c879ac41b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SupportScript
+  animator: {fileID: 236886545608285791}
+  rb: {fileID: 8300733337484552813}
+  particle: {fileID: -7933402773370340299}
+  hit: {fileID: -4675471960926898161}
+  pitchRange: {x: 0.8, y: 1.2}
+  walkPoint: {x: 0, y: 0, z: 0}
+  walkPointRange: 5
+  maxDist: 150
+  sightRange: 80
+  attackRange: 20
+  maxHealth: 50
+  health: 50
+  moveSpeed: 30
+  scoreValue: 0
+  currentState: 0
   Enemy: {fileID: 0}
   whatIsEnemy:
     serializedVersion: 2
     m_Bits: 512
-  walkPoint: {x: 0, y: 0, z: 0}
-  walkPointRange: 5
-  moveSpeed: 30
-  rb: {fileID: 8300733337484552813}
-  animHolder: {fileID: 6172671310983906341}
   lr: {fileID: 3198386823599110668}
-  particle: {fileID: -7933402773370340299}
-  hit: {fileID: -4675471960926898161}
-  pitchRange: {x: 0.8, y: 1.2}
   TimeBetweenSupport: 2
-  sightRange: 80
-  SupportRange: 15
-  EnemyInSightRange: 0
-  EnemyInSupportRange: 0
   SupportSpeed: 1
   HealthBoost: 10
   SpeedBoost: 80
   DamageBoost: 20
-  maxHealth: 50
-  health: 50
-  maxDist: 150
 --- !u!120 &3198386823599110668
 LineRenderer:
   serializedVersion: 3
@@ -5310,6 +5310,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7131971a179b381788411b93f8790566, type: 3}
+--- !u!95 &236886545608285791 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 7131971a179b381788411b93f8790566, type: 3}
+  m_PrefabInstance: {fileID: 5918577251993887694}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &6172671310983906341 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 7131971a179b381788411b93f8790566, type: 3}

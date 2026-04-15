@@ -5,7 +5,6 @@ using Unity.Mathematics;
 using UnityEngine;
 using Unity.Collections;
 using Unity.Burst;
-using UnityEngine.InputSystem.LowLevel;
 
 public class PlacementPoints : MonoBehaviour
 {
@@ -34,7 +33,8 @@ public class PlacementPoints : MonoBehaviour
     private int currentInt;
     public List<Vector3> terrainSpanws = new List<Vector3>();
     public List<Vector3> roofSpawns = new List<Vector3>();
-    public List<GameObject> enemies = new List<GameObject>();
+    public HashSet<Enemy> enemies = new HashSet<Enemy>();
+    public int enNum;
     public static PlacementPoints Instance;
 
     void Awake()
@@ -42,7 +42,6 @@ public class PlacementPoints : MonoBehaviour
         currentInt = frequency;
         Instance = this;
         TerrainGenerator.onGenerate += CullSpawns;
-        Road.onGenerate += CullSpawns;
 
         if (reccomendedDistances)
         {
@@ -53,10 +52,10 @@ public class PlacementPoints : MonoBehaviour
     void OnDestroy()
     {
         TerrainGenerator.onGenerate -= CullSpawns;
-        Road.onGenerate -= CullSpawns;
     }
     void Update()
     {
+        enNum = enemies.Count;
         if (debugLines)
         {
             foreach (Vector3 point in terrainSpanws)
@@ -70,7 +69,8 @@ public class PlacementPoints : MonoBehaviour
         {
             if (UnityEngine.Random.value < spawnChane && enemies.Count < maxEnemies)
             {
-                GameObject enemy = Instantiate(enemiePrefabs[UnityEngine.Random.Range(0, 2)], point + transform.up * 2, Quaternion.identity);
+                GameObject go = Instantiate(enemiePrefabs[UnityEngine.Random.Range(0, 2)], point + transform.up * 2, Quaternion.identity);
+                Enemy enemy = go.transform.GetComponent<Enemy>();
 
                 enemies.Add(enemy);
             }

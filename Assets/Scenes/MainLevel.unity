@@ -656,7 +656,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &182758926
 Transform:
   m_ObjectHideFlags: 0
@@ -688,7 +688,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 136
   rebuildPadding: 2
-  rebuildDelay: 0.2
+  rebuildDelay: 0.5
 --- !u!1001 &194392604
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1770,12 +1770,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TerrainGenerator
   player: {fileID: 1911483210}
-  viewDistance: 16
-  chunkSize: 16
+  viewDistance: 8
+  chunkSize: 32
   height: 1
   chunkMaterial: {fileID: 2100000, guid: a5e965b249263a3bb9f3103831dcefd9, type: 2}
-  targetFPS: 120
-  budget: 0
+  budget: 0.001
 --- !u!114 &359941771
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1821,14 +1820,14 @@ MonoBehaviour:
   roofMaxDist: 610
   frequency: 200
   spawnChane: 0.01
-  baseEnemies: 20
-  enemyScaling: 5
+  baseEnemies: 0
+  enemyScaling: 0
   maxEnemies: 0
   debugLines: 1
   reccomendedDistances: 0
   terrainSpanws: []
   roofSpawns: []
-  enemies: []
+  enNum: 0
 --- !u!1 &370315667
 GameObject:
   m_ObjectHideFlags: 0
@@ -2156,6 +2155,71 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 95056236404174792, guid: 884ec68dbb0c7d82ebedc538187ddd13, type: 3}
   m_PrefabInstance: {fileID: 2046711499}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &479202030
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1973792217361274458, guid: 3e49b9e2a5973c64e99c01a663ac88a7, type: 3}
+      propertyPath: m_Name
+      value: EnemyWizard
+      objectReference: {fileID: 0}
+    - target: {fileID: 4727380392406116522, guid: 3e49b9e2a5973c64e99c01a663ac88a7, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -64.32
+      objectReference: {fileID: 0}
+    - target: {fileID: 4727380392406116522, guid: 3e49b9e2a5973c64e99c01a663ac88a7, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 2.953
+      objectReference: {fileID: 0}
+    - target: {fileID: 4727380392406116522, guid: 3e49b9e2a5973c64e99c01a663ac88a7, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 61.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4727380392406116522, guid: 3e49b9e2a5973c64e99c01a663ac88a7, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4727380392406116522, guid: 3e49b9e2a5973c64e99c01a663ac88a7, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4727380392406116522, guid: 3e49b9e2a5973c64e99c01a663ac88a7, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4727380392406116522, guid: 3e49b9e2a5973c64e99c01a663ac88a7, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4727380392406116522, guid: 3e49b9e2a5973c64e99c01a663ac88a7, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4727380392406116522, guid: 3e49b9e2a5973c64e99c01a663ac88a7, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4727380392406116522, guid: 3e49b9e2a5973c64e99c01a663ac88a7, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8372327088356266093, guid: 3e49b9e2a5973c64e99c01a663ac88a7, type: 3}
+      propertyPath: destination.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8372327088356266093, guid: 3e49b9e2a5973c64e99c01a663ac88a7, type: 3}
+      propertyPath: obstacles.m_Bits
+      value: 136
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 3e49b9e2a5973c64e99c01a663ac88a7, type: 3}
 --- !u!224 &481455553 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 502294770218435330, guid: abb253c4fc235507491d4c1374119a4b, type: 3}
@@ -9470,7 +9534,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerStats
   Health: 0
-  HealthRegen: 0.2
+  HealthRegen: 1e+14
   MaxHealth: 100
   DamageMultiplier: 0
   Mana: 0
@@ -10965,3 +11029,4 @@ SceneRoots:
   - {fileID: 1474235056714483183}
   - {fileID: 282810615022690223}
   - {fileID: 1342103034}
+  - {fileID: 479202030}
