@@ -69,7 +69,7 @@ public class PlacementPoints : MonoBehaviour
         {
             if (UnityEngine.Random.value < spawnChane && enemies.Count < maxEnemies)
             {
-                GameObject go = Instantiate(enemiePrefabs[UnityEngine.Random.Range(0, 2)], point + transform.up * 2, Quaternion.identity);
+                GameObject go = Instantiate(enemiePrefabs[UnityEngine.Random.Range(0, 1)], point + transform.up * 2, Quaternion.identity);
                 Enemy enemy = go.transform.GetComponent<Enemy>();
 
                 enemies.Add(enemy);

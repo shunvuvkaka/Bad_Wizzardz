@@ -20,6 +20,7 @@ public abstract class Enemy : MonoBehaviour
     public float maxHealth;
     public float health;
     public float moveSpeed;
+    public float acceleration;
     public int scoreValue;
     public enum EnemyState
     {

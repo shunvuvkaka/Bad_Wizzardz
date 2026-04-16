@@ -1,27 +1,29 @@
-using System.Data;
-using Unity.Mathematics;
-using Unity.VectorGraphics;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
 public class EnemyMovement : MonoBehaviour
 {
+    [Header("References")]
+    public Rigidbody rb;
+    public Transform centerPoint;
+    [Header("Paramaeters")]
     public float speed;
     public float acceleration;
-    public Rigidbody rb;
-    public Transform leftPoint;
-    public Transform rightPoint;
-    public Transform centerPoint;
+    public float rotationSpeed;
+    public float characterWidth;
+    public int rotationPrecision = 10;
+    [SerializeField] private LayerMask obstacles;
+    [Header("Distances")]
     public float detectionDistance;
     public float avoidanceDistance;
     public float checkDistance = 3f;
-    public float characterWidth;
-    public Vector3 destination;
-    public LayerMask obstacles;
-    private Vector3 currentTarget;
-    private Vector3 currentDir;
+    [Header("Destinations")]
+    [SerializeField] private Vector3 destination;
+    [SerializeField] private Vector3 currentTarget;
+    [SerializeField] private Vector3 currentDir;
     private Vector3 position;
-    public int rotationPrecision = 10;
+    public bool moving = true;
+    private bool frame = true;
 
     void Awake()
     {
@@ -37,15 +39,27 @@ public class EnemyMovement : MonoBehaviour
     {
         position = transform.position;
 
-        Pathfinding();
-        Movement();
+        if (moving)
+            Movement();
+        else
+            rb.linearVelocity = Vector3.zero;
+    }
+    void Update()
+    {
+        if (frame)
+            Pathfinding();
+        
+        frame = !frame;
     }
 
     void Movement()
     {
-        transform.rotation = Quaternion.LookRotation(currentDir);
+        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(new Vector3(currentDir.x, 0, currentDir.z)), rotationSpeed);
 
-        rb.AddForce(transform.forward * acceleration, ForceMode.Acceleration);
+        if (rb.linearVelocity.magnitude < speed)
+        {
+            rb.AddForce(transform.forward * acceleration, ForceMode.VelocityChange);
+        }
     }
 
     void Pathfinding()
@@ -54,32 +68,24 @@ public class EnemyMovement : MonoBehaviour
         Vector3 targetDir = realDir;
         float targetDist = Vector3.Distance(position, destination);
 
-        Physics.Raycast(leftPoint.position, targetDir, out RaycastHit leftHit, targetDist, obstacles);
-        Physics.Raycast(rightPoint.position, targetDir, out RaycastHit rightHit, targetDist, obstacles);
-        Physics.Raycast(centerPoint.position, targetDir, out RaycastHit centerHit, targetDist, obstacles);
+        Physics.SphereCast(centerPoint.position, characterWidth, targetDir, out RaycastHit hit, targetDist, obstacles);
 
-        if (leftHit.collider == null && rightHit.collider == null && centerHit.collider == null)
+        if (hit.collider == null)
         {
             currentDir = targetDir;
             currentTarget = destination;
-            Debug.DrawRay(leftPoint.position, targetDir * targetDist, Color.green);
-            Debug.DrawRay(rightPoint.position, targetDir * targetDist, Color.green);
+            Debug.DrawRay(centerPoint.position, targetDir * targetDist, Color.green);
             Debug.DrawLine(position, currentTarget, Color.blue);
             return;
         }
 
-        leftHit.distance = leftHit.collider? leftHit.distance : float.MaxValue;
-        rightHit.distance = rightHit.collider? rightHit.distance : float.MaxValue;
-        centerHit.distance = centerHit.collider? centerHit.distance : float.MaxValue;
-
-        targetDist = Mathf.Min(leftHit.distance, rightHit.distance, centerHit.distance) - detectionDistance;
+        targetDist = hit.distance - detectionDistance;
 
         if (targetDist > avoidanceDistance)
         {
             currentDir = targetDir;
             currentTarget = position + targetDir * targetDist;
-            Debug.DrawRay(leftPoint.position, targetDir * targetDist, Color.yellow);
-            Debug.DrawRay(rightPoint.position, targetDir * targetDist, Color.yellow);
+            Debug.DrawRay(centerPoint.position, targetDir * targetDist, Color.yellow);
             Debug.DrawLine(position, currentTarget, Color.blue);
             return;
         }
@@ -91,7 +97,7 @@ public class EnemyMovement : MonoBehaviour
         Vector3 bestDirection = Vector3.zero;
 
         if (currentDir == null)
-            currentDir = targetDir;
+            currentDir = (destination - position).normalized;
 
         //angle represents a angle in degrees radians that increases each iteration
         for (float angle = 0; angle <= Mathf.PI; angle += Mathf.PI / rotationPrecision)
@@ -99,6 +105,7 @@ public class EnemyMovement : MonoBehaviour
             Vector3 leftCheck = CheckDirection(baseDirection, angle);
             Vector3 rightCheck = CheckDirection(baseDirection, -angle);
 
+            //note bias towards left side, consequence of linear execution
             if (leftCheck != Vector3.zero)
             {
                 bestDirection = leftCheck;
@@ -125,23 +132,20 @@ public class EnemyMovement : MonoBehaviour
         float x = baseDirection.x * Mathf.Cos(angle) - baseDirection.z * Mathf.Sin(angle);
         float y = baseDirection.x * Mathf.Sin(angle) + baseDirection.z * Mathf.Cos(angle);
 
-        Vector3 testDir = new Vector3(x, 0, y).normalized;
+        Vector3 testDir = new Vector3(x, 0, y);
 
         //defining start position for vectors
 
-        Physics.Raycast(leftPoint.position, testDir, out RaycastHit leftHit, checkDistance, obstacles);
-        Physics.Raycast(rightPoint.position, testDir, out  RaycastHit rightHit, checkDistance, obstacles);
-        Physics.Raycast(centerPoint.position, testDir, out  RaycastHit centerHit, checkDistance, obstacles);
-            
-        Debug.DrawRay(leftPoint.position, testDir * checkDistance, new Color(angle / Mathf.PI, 1, 1));
-        Debug.DrawRay(rightPoint.position, testDir * checkDistance, new Color(1, angle / Mathf.PI, 1));
+        Physics.SphereCast(centerPoint.position, characterWidth, testDir, out RaycastHit hit, checkDistance, obstacles);
         Debug.DrawRay(centerPoint.position, testDir * checkDistance, new Color(1, 1, angle / Mathf.PI));
 
-        if (leftHit.collider == null && rightHit.collider == null && centerHit.collider == null)
+        //returning succesful ray
+        if (hit.collider == null)
         {
             return testDir;
         }
 
+        //fallback
         return Vector3.zero;
     }
 }

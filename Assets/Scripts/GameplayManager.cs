@@ -69,8 +69,8 @@ public class GameplayManager : MonoBehaviour
                 yield return null;
             }
 
-            player.transform.position = road.roadPoints[road.segmentsBehind];
-            player.transform.rotation = Quaternion.FromToRotation(Vector3.left, road.pointNormals[road.segmentsBehind]);
+            player.transform.position = road.roadPoints[150];
+            player.transform.rotation = Quaternion.FromToRotation(Vector3.left, road.pointNormals[150]);
         }
 
         done = true;

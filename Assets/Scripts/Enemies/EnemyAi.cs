@@ -1,10 +1,12 @@
 using UnityEngine;
 
+[RequireComponent(typeof(EnemyMovement))]
 public class EnemyAi : Enemy, IDamageable
 {
     public Transform model;
     public GameObject attack;
     public LayerMask whatIsGround, whatIsPlayer, whatIsWall;
+    public EnemyMovement agent;
 
     [Header("Attacking")]
     public float attackSpeed;
@@ -14,7 +16,7 @@ public class EnemyAi : Enemy, IDamageable
 
     [Header("Paramaters")]
     public Vector3 destination;
-    public float Offset;
+    public float offset;
 
     [Header("Ugrades")]
     public float speedMod;
@@ -30,32 +32,26 @@ public class EnemyAi : Enemy, IDamageable
     {
         base.Iniitialise();
 
-        /*
+        agent = transform.GetComponent<EnemyMovement>();
+        
         agent.speed = moveSpeed;
-        agent.acceleration = moveSpeed;
-        */
-
+        agent.acceleration = acceleration;
     }
 
     protected override EnemyState Scan()
     {
         EnemyState state = EnemyState.Patroling;
-        Collider[] colliders = Physics.OverlapSphere(transform.position, sightRange / 2, whatIsPlayer);
+        Vector3 dir = (player.transform.position - transform.position).normalized;
 
-        foreach (Collider collider in colliders)
+        if (Physics.Raycast(transform.position, dir, sightRange, whatIsPlayer))
         {
             state = EnemyState.Chasing;
-            Vector3 dir = (collider.transform.position - transform.position).normalized;
-            float dist = Vector3.Distance(collider.transform.position, transform.position);
-            RaycastHit hit;
-            Physics.Raycast(transform.position, dir, out hit, dist);
+            Physics.Raycast(transform.position, dir, out RaycastHit hit, attackRange, whatIsPlayer + whatIsWall);
 
-            Debug.DrawRay(transform.position, dir * dist, Color.coral);
-
-            if (dist < attackRange / 2 && hit.transform.tag == "Player")
+            if (hit.collider != null && hit.transform.CompareTag("Player"))
             {
+                Debug.DrawRay(transform.position, dir * hit.distance, Color.coral);
                 state = EnemyState.Acting;
-                break;
             }
         }
 
@@ -68,7 +64,11 @@ public class EnemyAi : Enemy, IDamageable
 
         if (!walkPointSet) SearchWalkPoint();
 
-        if (walkPointSet) destination = walkPoint;
+        if (walkPointSet) 
+        {
+            agent.SetDestination(walkPoint);
+            agent.moving = true;
+        }
 
         Vector3 distanceToWalkPoint = transform.position - walkPoint;
 
@@ -81,7 +81,7 @@ public class EnemyAi : Enemy, IDamageable
 
     private void SearchWalkPoint() 
     {
-        // Calculate random point in range    public Transform animHolder;
+        // Calculate random point in range
         float randomZ = Random.Range(-walkPointRange, walkPointRange);
         float randomX = Random.Range(-walkPointRange, walkPointRange);
 
@@ -95,13 +95,15 @@ public class EnemyAi : Enemy, IDamageable
     protected override void Chasing()
     {
         animator.SetBool("Walking", true);
-        //agent.SetDestination(player.position);
+        agent.SetDestination(player.position);
+        agent.moving = true;
     }
     protected override void Acting()
     {
         animator.SetBool("Walking", false);
         // Make sure the Enemy Doesn't move
-        //agent.SetDestination(transform.position);
+        agent.SetDestination(transform.position);
+        agent.moving = false;
 
         Debug.DrawLine(model.position, player.position, Color.rebeccaPurple);
 
@@ -130,7 +132,7 @@ public class EnemyAi : Enemy, IDamageable
     {
         animator.SetTrigger("Attack");
         
-        GameObject go = Instantiate(attack, model.position + transform.forward * 2, Quaternion.LookRotation(direction));
+        GameObject go = Instantiate(attack, model.position + transform.forward * offset, Quaternion.LookRotation(direction));
         FireballDamage fireball = go.GetComponent<FireballDamage>();
 
         fireball.damage = damage + damageMod;
@@ -146,12 +148,15 @@ public class EnemyAi : Enemy, IDamageable
         hit.Play();
         animator.SetTrigger("Hit");
         health -= damage;
+
         if (health < 0)
         {
-            GameplayManager.Instance.addScore += scoreValue;
             particle.Play();
             animator.SetTrigger("Dead");
             Destroy(gameObject, 1f);
+            
+            if (GameplayManager.Instance != null)
+                GameplayManager.Instance.addScore += scoreValue;
         }
     }
 }

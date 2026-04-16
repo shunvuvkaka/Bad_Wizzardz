@@ -155,8 +155,10 @@ public class SupportScript : Enemy, IDamageable
         animator.SetTrigger("Attack");
         RandomBoost = Random.Range(0, 3);
         
-        if (!Enemy.TryGetComponent<EnemyAi>(out EnemyAi ai))
+        if (!Enemy.parent.TryGetComponent<EnemyAi>(out EnemyAi ai))
             return;
+
+        Debug.Log("trying support");
 
         if (RandomBoost == 1)
         {

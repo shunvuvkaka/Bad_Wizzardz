@@ -79,12 +79,13 @@ MonoBehaviour:
   pitchRange: {x: 0.8, y: 1.2}
   walkPoint: {x: 0, y: 0, z: 0}
   walkPointRange: 5
-  maxDist: 150
+  maxDist: 400
   sightRange: 80
   attackRange: 20
   maxHealth: 50
   health: 50
   moveSpeed: 30
+  acceleration: 0
   scoreValue: 0
   currentState: 0
   Enemy: {fileID: 0}
