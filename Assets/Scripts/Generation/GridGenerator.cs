@@ -1,52 +1,68 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
-using System.Collections;
+using BadWizards.ChunkData;
 
 public class GridGenerator : MonoBehaviour
 {
+    [Header("Main")]
     public int viewDistance;
+    public int buildingDistance;
     public int chunkSize;
     public Transform player;
+    [Header("Road")]
+    public float variationChance;
+    public float splitChance;
+    public float deathChance;
+    public int minHeads;
 
     [Header("Debug")]
-    private Dictionary<Vector2Int, ChunkObject> chunks = new Dictionary<Vector2Int, ChunkObject>();
-    [SerializeField] private List<Vector2Int> roadHeads = new List<Vector2Int>();
-    [SerializeField] private List<Vector2Int> activeChunks = new List<Vector2Int>();
+    public Dictionary<Vector2Int, ChunkObject> chunks = new Dictionary<Vector2Int, ChunkObject>();
+    private Dictionary<Vector2Int, DirectionPair> roadHeads = new Dictionary<Vector2Int, DirectionPair>();
+    public HashSet<Vector2Int> activeChunks = new HashSet<Vector2Int>();
     private HashSet<Vector2Int> toRemove = new HashSet<Vector2Int>();
-    [SerializeField] private Vector2Int playerChunk;
-    private HashSet<Vector2Int> edges = new HashSet<Vector2Int>();
+    public Vector2Int playerChunk;
+    private HashSet<Vector2Int> newRoads = new HashSet<Vector2Int>();
     public static Action OnNewChunks;
+
+    public static GridGenerator Instance;
+
+    private const int MAX_DEPTH = 128;
+
+    private int depth;
+    
 
     enum ChunkState
     {
         Invalid,
-        Emoty,
+        Empty,
         Populated
     }
 
     void Awake()
     {
         //ensures viiewDistance is a multiple of chunkSize
-        roadHeads.Add(new Vector2Int(0, 0));
+        roadHeads.Add(new Vector2Int(0, 0), BaseDirection());
 
         int mod = viewDistance % chunkSize;
         viewDistance -= mod;
+        buildingDistance -= mod;
 
-        OnNewChunks += PopulateChunks;
+        Instance = this;
     }
-    void OnDestroy()
-    {
-        OnNewChunks -= PopulateChunks;
-    }
+
+
     void Update()
     {
-        playerChunk = new Vector2Int(Mathf.FloorToInt(player.position.x / chunkSize), Mathf.FloorToInt(player.position.z / chunkSize));
+        depth = 0;
+
+        playerChunk = new Vector2Int(Mathf.FloorToInt(player.position.x / chunkSize), Mathf.FloorToInt(player.position.z / chunkSize)) * chunkSize;
 
         if (GenerateChunks())
         {
             OnNewChunks?.Invoke();
-            Debug.Log("Invoking");
+            PopulateRoadChunks();
+            PopulateBuildingChunks();
         }
 
         RemoveChunks();
@@ -62,16 +78,18 @@ public class GridGenerator : MonoBehaviour
         {
             for (int z = -viewDistance; z <= viewDistance; z += chunkSize)
             {
-                Vector2Int coord = new Vector2Int(playerChunk.x * chunkSize + x, playerChunk.y * chunkSize + z);
-                
-                if (x == -viewDistance || x == viewDistance || z == -viewDistance || z == viewDistance)
-                    edges.Add(coord);
+                Vector2Int coord = new Vector2Int(playerChunk.x + x, playerChunk.y + z);
 
                 if (!activeChunks.Contains(coord))
                 {
                     newChunks = true;
                     activeChunks.Add(coord);
                     chunks.Add(coord, new EmptyChunk());
+                }
+
+                if (roadHeads.Count < minHeads)
+                {
+                    roadHeads.TryAdd(coord, BaseDirection());
                 }
             }
         }
@@ -86,8 +104,8 @@ public class GridGenerator : MonoBehaviour
         foreach(Vector2Int coord in activeChunks)
         {   
             //no sqrt
-            if (Mathf.Abs(coord.x - playerChunk.x * chunkSize) > viewDistance
-                || Mathf.Abs(coord.y - playerChunk.y * chunkSize) > viewDistance)
+            if (Mathf.Abs(coord.x - playerChunk.x) > viewDistance
+                || Mathf.Abs(coord.y - playerChunk.y) > viewDistance)
             {
                 toRemove.Add(coord);
             }
@@ -97,46 +115,84 @@ public class GridGenerator : MonoBehaviour
         {   
             activeChunks.Remove(coord);
             chunks.Remove(coord);
+            
+            if (GridTerrain.Instance.activeGround.TryGetValue(coord, out GameObject go))
+            {
+                go.SetActive(false);
+                GridTerrain.Instance.activeGround.Remove(coord);
+            }
+
+            if (GridBuildings.Instance.activeBuildings.TryGetValue(coord, out go))
+            {
+                Destroy(go);
+                GridBuildings.Instance.activeBuildings.Remove(coord);
+            }
 
             roadHeads.Remove(coord);
         }
     }
 
-    void PopulateChunks()
+    void PopulateRoadChunks()
     {
-        Vector2Int[] roadHeadsArray = roadHeads.ToArray();
+        newRoads.Clear();
 
-        foreach (Vector2Int val in roadHeadsArray)
+        Vector2Int[] roadHeadCoordArray = new Vector2Int[roadHeads.Count];
+        DirectionPair[] roadHeadDirArray = new DirectionPair[roadHeads.Count];
+
+        int i = 0;
+
+        foreach (var kvp in roadHeads)
         {
-            Vector2Int coord = val;
+            roadHeadCoordArray[i] = kvp.Key;
+            roadHeadDirArray[i] = kvp.Value;
 
-            Vector2Int baseDir;
+            i++;
+        }
 
-            switch (UnityEngine.Random.Range(1, 3))
-            {
-                case 1:
-                    baseDir = Vector2Int.up; 
-                    break;
-                case 2:
-                    baseDir = Vector2Int.left; 
-                    break;
-                case 3:
-                    baseDir = Vector2Int.right; 
-                    break;
-                default:
-                    baseDir = Vector2Int.up;
-                    break;
-            }
+        for (int j = 0; j < roadHeadCoordArray.Length; j++)
+        {
+            Vector2Int coord = roadHeadCoordArray[j];
+            Vector2Int baseDir = roadHeadDirArray[j].baseDir;
+            Vector2Int prevDir = roadHeadDirArray[j].prevDir;
 
             while (true)
             {
-                if (!AdvanceRoad(ref coord, baseDir))
+                if (!AdvanceRoad(ref coord, baseDir, prevDir, out prevDir))
                     break;
             }
         }
-    }
 
-    bool AdvanceRoad(ref Vector2Int coord, Vector2Int baseDir)
+        if (newRoads.Count > 0 && depth < MAX_DEPTH)
+        {
+            //recursion limited by depth, may screw up some gen if broken because of depth, but better than crash
+            PopulateRoadChunks();
+            depth++;
+        }
+    }
+    
+    void PopulateBuildingChunks()
+    {
+        for (int x = -buildingDistance; x <= buildingDistance; x += chunkSize)
+        {
+            for (int z = -buildingDistance; z <= buildingDistance; z += chunkSize)
+            {
+                Vector2Int coord = new Vector2Int(playerChunk.x + x, playerChunk.y + z);
+
+
+                //if this executes, something has gone very wrong
+                if (!activeChunks.Contains(coord))
+                    continue;
+
+                ChunkObject chunkObject = chunks[coord];
+
+                if (chunkObject is EmptyChunk)
+                {
+                    chunks[coord] = new BuildingChunk();
+                }
+            }
+        }
+    }
+    bool AdvanceRoad(ref Vector2Int coord, Vector2Int baseDir, Vector2Int prevDir, out Vector2Int currDir)
     {
         ChunkObject chunkObject;
 
@@ -144,8 +200,10 @@ public class GridGenerator : MonoBehaviour
 
         ChunkState result;
 
+        currDir = Vector2Int.zero;
+
         //this line is where we can set chance variations by setting dir to some other value of baseDir
-        Vector2Int dir = baseDir;
+        Vector2Int dir = DirectionShift(baseDir, variationChance);
 
         if (CheckChunk(dir, coord, out chunkObject, out result) != ChunkState.Populated)
         {
@@ -175,13 +233,69 @@ public class GridGenerator : MonoBehaviour
     
         roadHeads.Remove(coord);
 
+        Vector2Int shiftDir = Vector2Int.zero;
+
+        if (UnityEngine.Random.value < splitChance)
+        {
+            newRoads.Add(coord);
+            shiftDir = DirectionShift(baseDir, 1);
+            roadHeads.Add(coord, new DirectionPair(shiftDir, prevDir));
+        }
+
+        if (UnityEngine.Random.value < deathChance)
+        {
+            if (chunks[coord] is not RoadChunk)
+                chunks[coord] = new RoadChunk(Vector2Int.zero, newDir, shiftDir);
+            
+            return false;
+        }
+
+        if (chunks[coord] is not RoadChunk)
+            chunks[coord] = new RoadChunk(prevDir, newDir, shiftDir);
+
         coord += newDir * chunkSize;
+        currDir = newDir;
 
-        roadHeads.Add(coord);
-
-        chunks[coord] = new RoadChunk();
+        roadHeads.TryAdd(coord, new DirectionPair(baseDir, currDir));
 
         return true;
+    }
+
+    Vector2Int DirectionShift(Vector2Int baseDir, float chance)
+    {
+        if (UnityEngine.Random.value > chance)
+            return baseDir;
+
+        if (UnityEngine.Random.Range(0, 2) == 0)
+            return new Vector2Int(-baseDir.y, baseDir.x);
+        else
+            return new Vector2Int(baseDir.y, -baseDir.x);
+    }
+
+    DirectionPair BaseDirection()
+    {
+        Vector2Int baseDir;
+
+        switch (UnityEngine.Random.Range(1, 5))
+        {
+            case 1:
+                baseDir = Vector2Int.up; 
+                break;
+            case 2:
+                baseDir = Vector2Int.left; 
+                break;
+            case 3:
+                baseDir = Vector2Int.right; 
+                break;
+            case 4:
+                baseDir = Vector2Int.down; 
+                break;
+            default:
+                baseDir = Vector2Int.up;
+                break;
+        }
+        
+        return new DirectionPair(baseDir, Vector2Int.zero);
     }
 
     ChunkState CheckChunk(Vector2Int dir, Vector2Int coord, out ChunkObject chunkObject, out ChunkState state)
@@ -194,7 +308,7 @@ public class GridGenerator : MonoBehaviour
 
         //Checks straight forward
 
-        if(!chunks.TryGetValue(coord + dir, out chunkObject) || (Type)chunkObject.GetObject() != typeof(EmptyChunk))
+        if(!chunks.TryGetValue(coord + dir, out chunkObject) || chunkObject.chunkType != ChunkObject.ChunkType.Empty)
         {
             if (chunkObject == null)
             {
@@ -210,7 +324,7 @@ public class GridGenerator : MonoBehaviour
         
         Vector2Int dir2 = dir;
 
-        if(!chunks.TryGetValue(coord + dir + dir2, out testChunk) || (Type)testChunk.GetObject() != typeof(EmptyChunk))
+        if(!chunks.TryGetValue(coord + dir + dir2, out testChunk) || testChunk.chunkType != ChunkObject.ChunkType.Empty)
         {
             if (testChunk == null)
             {
@@ -224,7 +338,7 @@ public class GridGenerator : MonoBehaviour
         
         dir2 = new Vector2Int(-dir.y, dir.x);
 
-        if(!chunks.TryGetValue(coord + dir + dir2, out testChunk) || (Type)testChunk.GetObject() != typeof(EmptyChunk))
+        if(!chunks.TryGetValue(coord + dir + dir2, out testChunk) || testChunk.chunkType != ChunkObject.ChunkType.Empty)
         {
             if (testChunk == null)
             {
@@ -238,7 +352,7 @@ public class GridGenerator : MonoBehaviour
 
         dir2 = new Vector2Int(dir.y, -dir.x);
 
-        if(!chunks.TryGetValue(coord + dir + dir2, out testChunk) || (Type)testChunk.GetObject() != typeof(EmptyChunk))
+        if(!chunks.TryGetValue(coord + dir + dir2, out testChunk) || testChunk.chunkType != ChunkObject.ChunkType.Empty)
         {
             if (testChunk == null)
             {
@@ -250,8 +364,8 @@ public class GridGenerator : MonoBehaviour
             return ChunkState.Populated;
         }
 
-        state = ChunkState.Emoty;
-        return ChunkState.Emoty;
+        state = ChunkState.Empty;
+        return ChunkState.Empty;
     }
 
     void DebugLines()
@@ -271,6 +385,9 @@ public class GridGenerator : MonoBehaviour
                 case RoadChunk:
                     color = Color.indianRed;
                     break;
+                case BuildingChunk:
+                    color = Color.cyan;
+                    break;
                 default:
                     color = Color.black;
                     break;
@@ -278,12 +395,51 @@ public class GridGenerator : MonoBehaviour
 
             Debug.DrawLine(new Vector3(coord.x, 0, coord.y), new Vector3(coord.x + chunkSize, 0, coord.y), color);
             Debug.DrawLine(new Vector3(coord.x, 0, coord.y), new Vector3(coord.x, 0, coord.y + chunkSize), color);
+
+            if (chunk.chunkType == ChunkObject.ChunkType.Road)
+            {
+                RoadChunk roadChunk = (RoadChunk)kvp.Value;
+
+                switch (roadChunk.identity)
+                {
+                    case RoadChunk.RoadIdentity.Straight:
+                        color = Color.green;
+                        break;
+                    case RoadChunk.RoadIdentity.Bent:
+                        color = Color.yellow;
+                        break;
+                    case RoadChunk.RoadIdentity.End:
+                        color = Color.red;
+                        break;
+                    case RoadChunk.RoadIdentity.Intersection:
+                        color = Color.blue;
+                        break;
+                }
+
+                Debug.DrawLine(new Vector3(coord.x, 5, coord.y), new Vector3(coord.x + roadChunk.nextDir.x * chunkSize, 5, coord.y + roadChunk.nextDir.y * chunkSize), color);
+                Debug.DrawLine(new Vector3(coord.x, 5, coord.y), new Vector3(coord.x + roadChunk.branchDir.x * chunkSize, 5, coord.y + roadChunk.branchDir.y * chunkSize), color);
+            }
         }
 
-        foreach (Vector2Int coord in roadHeads)
+        foreach (var kvp in roadHeads)
         {
+            Vector2Int coord = kvp.Key;
+            Vector2Int dir = kvp.Value.baseDir * 4;
+
             Debug.DrawLine(new Vector3(coord.x, 0, coord.y), new Vector3(coord.x, 5, coord.y), Color.magenta);
+            Debug.DrawLine(new Vector3(coord.x, 5, coord.y), new Vector3(coord.x + dir.x, 5, coord.y + dir.y), Color.yellowNice);
         }
     }
     
+    public struct DirectionPair
+    {
+        public Vector2Int baseDir;
+        public Vector2Int prevDir;
+
+        public DirectionPair(Vector2Int norm, Vector2Int prev)
+        {
+            baseDir = norm;
+            prevDir = prev;
+        }
+    }
 }

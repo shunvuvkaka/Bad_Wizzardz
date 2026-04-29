@@ -462,6 +462,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1814545302}
   - component: {fileID: 1814545301}
+  - component: {fileID: 1814545303}
+  - component: {fileID: 1814545304}
+  - component: {fileID: 1814545305}
   m_Layer: 0
   m_Name: ChunkGenerator
   m_TagString: Untagged
@@ -481,11 +484,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81bebecb636ef7f43a70a351acd18062, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridGenerator
-  viewDistance: 256
+  viewDistance: 512
+  buildingDistance: 256
   chunkSize: 16
   player: {fileID: 1305286511}
-  roadHeads: []
-  activeChunks: []
+  variationChance: 0.1
+  splitChance: 0.02
+  deathChance: 0.01
+  minHeads: 3
   playerChunk: {x: 0, y: 0}
 --- !u!4 &1814545302
 Transform:
@@ -496,12 +502,60 @@ Transform:
   m_GameObject: {fileID: 1814545300}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.59932, y: -0, z: -3.53496}
+  m_LocalPosition: {x: 0, y: -0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1814545303
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1814545300}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: abedf7f4a3d1363de9996c478b4f4c7e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GridTerrain
+  gridGenerator: {fileID: 1814545301}
+  chunkDivisions: 4
+  groundMat: {fileID: 2100000, guid: a5e965b249263a3bb9f3103831dcefd9, type: 2}
+--- !u!114 &1814545304
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1814545300}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82d54ce9a7d547062995c931564a056f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Pool
+  proceduralRoad: {fileID: 0}
+  gridGenerator: {fileID: 1814545301}
+  roadPrefab: {fileID: 0}
+  terrainPrefab: {fileID: 5975383585194910617, guid: 8fd3fadfc5b35abac94a4b0100135414, type: 3}
+  pooledRoad: []
+  pooledTerrain: []
+--- !u!114 &1814545305
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1814545300}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af192429b5448b10f9abecb6981ede3a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GridBuildings
+  buildings:
+  - building: {fileID: 3044586093252008176, guid: abdcd7c0840f313caa3ee2209c38170f, type: 3}
+    size: {x: 0, y: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

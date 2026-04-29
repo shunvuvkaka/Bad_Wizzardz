@@ -1,32 +1,69 @@
 using System;
+using UnityEngine;
 
-public interface ChunkObject
+namespace BadWizards.ChunkData {
+
+public abstract class ChunkObject
 { 
-    public object GetObject() => GetType();
+    public enum ChunkType
+    {
+        Empty,
+        Road,
+        Building
+    }
+
+    public ChunkType chunkType;
 }
 
-public struct BuildingChunk : ChunkObject
+public class BuildingChunk : ChunkObject
 {
     public float height;
+    public bool occupied;
 
-    public BuildingChunk(float h = 0)
+    public BuildingChunk()
     {
-        height = h;
+        chunkType = ChunkType.Building;
+        occupied = false;
     }
 }
 
-public struct RoadChunk : ChunkObject
+public class RoadChunk : ChunkObject
 {
-    public float height;
-
-    public RoadChunk(float h = 0)
+    public Vector2Int nextDir;
+    public Vector2Int branchDir;
+    public enum RoadIdentity
     {
-        height = h;
+        Straight,
+        Bent,
+        Intersection,
+        End
+    }
+
+    public RoadIdentity identity {get; protected set;}
+
+    public RoadChunk(Vector2Int prev, Vector2Int next, Vector2Int branch)
+    {
+        nextDir = next;
+        branchDir = branch;
+        chunkType = ChunkType.Road;
+
+        if (branch != Vector2Int.zero)
+            identity = RoadIdentity.Intersection;
+        else if (prev == Vector2Int.zero || next == Vector2Int.zero)
+            identity = RoadIdentity.End;
+        else if (prev != next)
+            identity = RoadIdentity.Bent;
+        else
+            identity = RoadIdentity.Straight;
     }
 }
 
-public struct EmptyChunk : ChunkObject
+public class EmptyChunk : ChunkObject
 {
-
+    public EmptyChunk()
+    {
+        chunkType = ChunkType.Empty;
+    }
+}
 }
 
