@@ -492,6 +492,7 @@ MonoBehaviour:
   splitChance: 0.02
   deathChance: 0.01
   minHeads: 3
+  buildingIterations: 5
   playerChunk: {x: 0, y: 0}
 --- !u!4 &1814545302
 Transform:
@@ -554,8 +555,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridBuildings
   buildings:
+  - building: {fileID: 3158003948011726796, guid: 2828178e2f29f99ea9ad9003c8233aad, type: 3}
+    size: {x: 2, y: 1}
+  - building: {fileID: 8953469637309185442, guid: 5ddf2174b95ce94b48e9a3e6eb8cdd86, type: 3}
+    size: {x: 2, y: 2}
+  - building: {fileID: 5200059952989220779, guid: af0beabd4fd7e4a19ad4edc65792ad41, type: 3}
+    size: {x: 2, y: 2}
   - building: {fileID: 3044586093252008176, guid: abdcd7c0840f313caa3ee2209c38170f, type: 3}
-    size: {x: 0, y: 0}
+    size: {x: 1, y: 1}
+  angleRange: {x: -5, y: 5}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -15,21 +15,24 @@ public class GridGenerator : MonoBehaviour
     public float splitChance;
     public float deathChance;
     public int minHeads;
-
+    [Header("Buildings")]
+    public int buildingIterations;
     [Header("Debug")]
+    public Vector2Int playerChunk;
     public Dictionary<Vector2Int, ChunkObject> chunks = new Dictionary<Vector2Int, ChunkObject>();
     private Dictionary<Vector2Int, DirectionPair> roadHeads = new Dictionary<Vector2Int, DirectionPair>();
     public HashSet<Vector2Int> activeChunks = new HashSet<Vector2Int>();
     private HashSet<Vector2Int> toRemove = new HashSet<Vector2Int>();
-    public Vector2Int playerChunk;
     private HashSet<Vector2Int> newRoads = new HashSet<Vector2Int>();
     public static Action OnNewChunks;
+    public static Action OnGenerateBuildings;
 
     public static GridGenerator Instance;
 
     private const int MAX_DEPTH = 128;
 
     private int depth;
+    private int buildingCount;
     
 
     enum ChunkState
@@ -41,6 +44,7 @@ public class GridGenerator : MonoBehaviour
 
     void Awake()
     {
+        buildingCount = 0;
         //ensures viiewDistance is a multiple of chunkSize
         roadHeads.Add(new Vector2Int(0, 0), BaseDirection());
 
@@ -60,9 +64,17 @@ public class GridGenerator : MonoBehaviour
 
         if (GenerateChunks())
         {
+            buildingCount--;
             OnNewChunks?.Invoke();
             PopulateRoadChunks();
             PopulateBuildingChunks();
+
+            if(buildingCount < 0)
+            {
+                OnGenerateBuildings?.Invoke();
+                buildingCount = buildingIterations;
+            }
+
         }
 
         RemoveChunks();
@@ -103,7 +115,7 @@ public class GridGenerator : MonoBehaviour
 
         foreach(Vector2Int coord in activeChunks)
         {   
-            //no sqrt
+            //no sqrt bc euclidean
             if (Mathf.Abs(coord.x - playerChunk.x) > viewDistance
                 || Mathf.Abs(coord.y - playerChunk.y) > viewDistance)
             {
@@ -368,7 +380,7 @@ public class GridGenerator : MonoBehaviour
         return ChunkState.Empty;
     }
 
-    void DebugLines()
+    public void DebugLines()
     {
         foreach (var kvp in chunks)
         {
@@ -386,7 +398,11 @@ public class GridGenerator : MonoBehaviour
                     color = Color.indianRed;
                     break;
                 case BuildingChunk:
-                    color = Color.cyan;
+                    BuildingChunk buildingChunk = (BuildingChunk)chunk;
+                    if (buildingChunk.occupied)
+                        color = Color.blueViolet;
+                    else
+                        color = Color.cyan;
                     break;
                 default:
                     color = Color.black;
