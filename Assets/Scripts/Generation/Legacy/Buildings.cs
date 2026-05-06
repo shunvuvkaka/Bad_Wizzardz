@@ -622,6 +622,8 @@ public class Buildings : MonoBehaviour
         GameObject go = Instantiate(building.building, basePoints.bl, rotation);
         go.transform.parent = buildingParent;
 
+        buildings.Add(new Vector2(basePoints.br.x, basePoints.br.z), go);
+
         if (currGen < generations)
         {
             //create a new buildpoints just like what was done for the road, but now with the meshes values instead!!!

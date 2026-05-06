@@ -640,55 +640,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &182758925
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 182758926}
-  - component: {fileID: 182758927}
-  m_Layer: 0
-  m_Name: NavMesh
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &182758926
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 182758925}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 67.29742, y: -0, z: -216.34451}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &182758927
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 182758925}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ad3e452ffec67684c82da574ed327c70, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ChunkNavMesh
-  navMeshLayer:
-    serializedVersion: 2
-    m_Bits: 136
-  rebuildPadding: 2
-  rebuildDelay: 0.2
 --- !u!1001 &194392604
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1770,12 +1721,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TerrainGenerator
   player: {fileID: 1911483210}
-  viewDistance: 16
-  chunkSize: 16
+  viewDistance: 8
+  chunkSize: 32
   height: 1
   chunkMaterial: {fileID: 2100000, guid: a5e965b249263a3bb9f3103831dcefd9, type: 2}
-  targetFPS: 120
-  budget: 0
+  budget: 0.001
 --- !u!114 &359941771
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1806,7 +1756,6 @@ MonoBehaviour:
   - {fileID: 8677224661522050958, guid: 7ccc28376900e324a8eee7cb5e3b9938, type: 3}
   enemiePrefabs:
   - {fileID: 1973792217361274458, guid: 3e49b9e2a5973c64e99c01a663ac88a7, type: 3}
-  - {fileID: 5998093825215329398, guid: b81ff6c04a4b4cc36bb1c507058c8419, type: 3}
   terrainChance: 0.01
   roofChance: 0.005
   minSpacing: 2
@@ -1822,13 +1771,13 @@ MonoBehaviour:
   frequency: 200
   spawnChane: 0.01
   baseEnemies: 20
-  enemyScaling: 5
+  enemyScaling: 1
   maxEnemies: 0
   debugLines: 1
   reccomendedDistances: 0
   terrainSpanws: []
   roofSpawns: []
-  enemies: []
+  enNum: 0
 --- !u!1 &370315667
 GameObject:
   m_ObjectHideFlags: 0
@@ -4277,7 +4226,7 @@ RectTransform:
   m_Father: {fileID: 1956235935}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 0.823}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: -20, y: -20}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -8753,7 +8702,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1774715062
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9470,7 +9419,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerStats
   Health: 0
-  HealthRegen: 0.2
+  HealthRegen: 1e+14
   MaxHealth: 100
   DamageMultiplier: 0
   Mana: 0
@@ -9748,7 +9697,7 @@ RectTransform:
   m_Father: {fileID: 956136773}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 0.726}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: -20, y: -20}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -10426,7 +10375,7 @@ RectTransform:
   m_Father: {fileID: 44533730}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: -20, y: -20}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -10957,7 +10906,6 @@ SceneRoots:
   - {fileID: 514877889}
   - {fileID: 1714011802}
   - {fileID: 370315669}
-  - {fileID: 182758926}
   - {fileID: 600904835}
   - {fileID: 890717707}
   - {fileID: 2327151512007018851}

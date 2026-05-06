@@ -6,7 +6,7 @@ public class Pool : MonoBehaviour
 {
     public static Pool Instance;
     [SerializeField] private Road proceduralRoad;
-    [SerializeField] private TerrainGenerator terrainGenerator;
+    [SerializeField] private GridGenerator gridGenerator;
     public GameObject roadPrefab;
     public GameObject terrainPrefab;
     [SerializeField] private List<GameObject> pooledRoad = new List<GameObject>();
@@ -16,8 +16,8 @@ public class Pool : MonoBehaviour
         if (Instance == null) 
             Instance = this;
         
-        PrepareRoads(proceduralRoad.segmentsAhead + proceduralRoad.segmentsBehind + 10);
-        PrepareTerrain(terrainGenerator.viewDistance + 1);
+        //PrepareRoads(proceduralRoad.segmentsAhead + proceduralRoad.segmentsBehind + 10);
+        PrepareTerrain(gridGenerator.viewDistance / gridGenerator.chunkSize);
     }
 
     void PrepareRoads(int instantiations)
@@ -32,7 +32,7 @@ public class Pool : MonoBehaviour
 
     void PrepareTerrain(int viewDistance)
     {
-        int instantiations = (int)Mathf.Pow((viewDistance * 2), 2) + viewDistance * 4;
+        int instantiations = (int)Mathf.Pow(viewDistance * 2, 2);
 
         for (int i = 0; i <= instantiations; i++)
         {
@@ -50,7 +50,7 @@ public class Pool : MonoBehaviour
                 return pooledRoad[i];
             }
         }
-        Debug.LogError("Road Pool empty!");
+        Debug.LogWarning("Road Pool empty!");
         GameObject go = Instantiate(roadPrefab, transform);
         pooledRoad.Add(go);
         return go;
@@ -65,8 +65,10 @@ public class Pool : MonoBehaviour
                 return pooledTerrain[i];
             }
         }
-        Debug.LogError("Terrain Pool empty!");
-        return Instantiate(terrainPrefab, transform);
+        Debug.LogWarning("Terrain Pool empty!");
+        GameObject go = Instantiate(terrainPrefab, transform);
+        pooledTerrain.Add(go);
+        return go;
     }
 
     public void ReturnRoad(GameObject road)
