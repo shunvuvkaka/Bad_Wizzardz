@@ -20,7 +20,7 @@ public class GridGenerator : MonoBehaviour
     [Header("Debug")]
     public Vector2Int playerChunk;
     public Dictionary<Vector2Int, ChunkObject> chunks = new Dictionary<Vector2Int, ChunkObject>();
-    private Dictionary<Vector2Int, DirectionPair> roadHeads = new Dictionary<Vector2Int, DirectionPair>();
+    public Dictionary<Vector2Int, DirectionPair> roadHeads {get; private set;} = new Dictionary<Vector2Int, DirectionPair>();
     public HashSet<Vector2Int> activeChunks = new HashSet<Vector2Int>();
     private HashSet<Vector2Int> toRemove = new HashSet<Vector2Int>();
     private HashSet<Vector2Int> newRoads = new HashSet<Vector2Int>();
@@ -140,6 +140,12 @@ public class GridGenerator : MonoBehaviour
                 GridBuildings.Instance.activeBuildings.Remove(coord);
             }
 
+            if (GridRoads.Instance.activeRoads.TryGetValue(coord, out go))
+            {
+                Destroy(go);
+                GridRoads.Instance.activeRoads.Remove(coord);
+            }
+
             roadHeads.Remove(coord);
         }
     }
@@ -257,7 +263,7 @@ public class GridGenerator : MonoBehaviour
         if (UnityEngine.Random.value < deathChance)
         {
             if (chunks[coord] is not RoadChunk)
-                chunks[coord] = new RoadChunk(Vector2Int.zero, newDir, shiftDir);
+                chunks[coord] = new RoadChunk(prevDir, Vector2Int.zero, shiftDir);
             
             return false;
         }
