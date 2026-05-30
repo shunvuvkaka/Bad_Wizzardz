@@ -1,11 +1,13 @@
 using System;
 using UnityEngine;
-using static BadWizards.ChunkData.RoadChunk;
 
 namespace BadWizards.ChunkData {
 [Serializable]
+/// <summary>
+/// Structure for a road that is populated on the grid
+/// </summary>
 public struct RoadObject
 {
-    public RoadIdentity identity;
+    public ChunkObject.RoadIdentity identity;
     public GameObject road;
 }}

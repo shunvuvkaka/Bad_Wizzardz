@@ -6,6 +6,8 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using System.Diagnostics;
 
+
+//DOCS COMING SOON!!!
 public class GridTerrain : MonoBehaviour
 {
     public GridGenerator gridGenerator;
