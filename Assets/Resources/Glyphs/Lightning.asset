@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c513af9b1e04f945b7619c5813802fb, type: 3}
+  m_Name: Lightning
+  m_EditorClassIdentifier: Assembly-CSharp::GlyphSO
+  spell: {fileID: 11400000, guid: d9f2721a80a0e22a79d33e4c2d926dae, type: 2}
+  points:
+  - {x: 379, y: 464}
+  - {x: 373, y: 459}
+  - {x: 368, y: 455}
+  - {x: 364, y: 450}
+  - {x: 358, y: 443}
+  - {x: 354, y: 438}
+  - {x: 351, y: 433}
+  - {x: 344, y: 425}
+  - {x: 342, y: 420}
+  - {x: 334, y: 412}
+  - {x: 329, y: 403}
+  - {x: 321, y: 394}
+  - {x: 313, y: 383}
+  - {x: 306, y: 373}
+  - {x: 300, y: 369}
+  - {x: 294, y: 358}
+  - {x: 284, y: 347}
+  - {x: 271, y: 333}
+  - {x: 267, y: 328}
+  - {x: 278, y: 329}
+  - {x: 287, y: 332}
+  - {x: 316, y: 330}
+  - {x: 349, y: 326}
+  - {x: 358, y: 327}
+  - {x: 373, y: 330}
+  - {x: 389, y: 334}
+  - {x: 408, y: 335}
+  - {x: 422, y: 335}
+  - {x: 437, y: 335}
+  - {x: 460, y: 333}
+  - {x: 450, y: 322}
+  - {x: 430, y: 310}
+  - {x: 407, y: 297}
+  - {x: 388, y: 289}
+  - {x: 371, y: 277}
+  - {x: 354, y: 266}
+  - {x: 344, y: 256}
+  - {x: 332, y: 245}
+  - {x: 322, y: 236}
+  - {x: 313, y: 227}
+  - {x: 300, y: 216}
+  - {x: 281, y: 202}
+  - {x: 272, y: 193}
+  - {x: 268, y: 188}

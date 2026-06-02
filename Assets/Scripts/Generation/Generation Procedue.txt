@@ -1,0 +1,23 @@
+Generation Procedue
+
+This document's purpose is to provide insight into how generation is handled internally via the new grid system.
+
+It outlines the actual code behind the principle of the new system.
+
+1. Chunks are primarily stored in an dictionary with length viewDistance^2 of key type Vector2Int, the co-ordinate of the chunk, and value type ChunkObject<T>. This ChunkObject structs generic type T corresponds to the actual object present at that chunk position (e.g. building, road)
+
+2. Generation is mainly conducted off of a HashSet of type Vector2Int (corresponding to the keys in the main dictionaty) that are the end points, or "heads" of different streets. This hashset can be added to and removed from to simply remove or add new heads.
+
+3. From the heads, road generation math is conducted, moving forward with a chance of adding a new head on the side until reaching the end of the currently generated map. If a road is completely trapped, the head dies and is removed from the hashset.
+
+4. After all roads have been iterated, all the remaining space is populated with the building type, effectively creating zones where buildings can spawn.
+
+5. All chunks are then iterated upon once more, checking if the distance from the player is greater then viewDistance, in which, the co-ordinate is added to another HashSet for chunks to be removed.
+
+6. The co-ordinates remaining in this hashset are removed from relevant lists, thus removing the chunks.
+
+KEY DRAWBACKS!!
+
+Chunks are not persistent, meeanig places you already traveled to will not be the same if you go back to them. Could be changed with determistic rng based off position (i.e. perlin noise)
+
+Chunks simply defenie the zones where things can spawn, not actually dictating the shape or size of buildings or how the road moves. These processes will be handled in sperate scripts.

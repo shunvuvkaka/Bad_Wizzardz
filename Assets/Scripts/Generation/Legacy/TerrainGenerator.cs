@@ -30,14 +30,12 @@ public class TerrainGenerator : MonoBehaviour
     private Stopwatch stopwatch= new Stopwatch();
     public static Action onGenerate;
     public static TerrainGenerator Instance;
-    [SerializeField] private float targetFPS = 120f;
     [SerializeField] private float budget;
 
 
     void Awake()
     {
         //0.5 means half of frame time will be allocated to terrain generation
-        budget = 0.5f / targetFPS;
 
         int maxVisibleChunks = (viewDistance * 2 + 1);
         maxVisibleChunks *= maxVisibleChunks;
@@ -202,10 +200,6 @@ public class TerrainGenerator : MonoBehaviour
             points[i] = data.vertices[i] + chunk.transform.position;
 
         PlacementPoints.Instance.Propify(points, chunk.transform, true);
-
-        Chunk builder = chunk.GetComponent<Chunk>();
-
-        builder.Build();
 
         mf.mesh = mesh;
         mc.sharedMesh = mesh;

@@ -4,9 +4,6 @@ using UnityEngine;
 public class ArrowSpell : BaseSpell
 {
     public GameObject arrow;
-    public float speed = 10;
-    public float lifespan = 2;
-    public float initialSpace = 1;
     public override void Cast()
     {
         base.Cast();
@@ -20,10 +17,5 @@ public class ArrowSpell : BaseSpell
 
         GameObject go = Instantiate(arrow, player.transform.position, Quaternion.LookRotation(cam.forward, cam.up));
         Arrow arrowS = go.GetComponent<Arrow>();
-
-        go.transform.position += go.transform.forward * initialSpace;
-
-        arrowS.speed = speed;
-        arrowS.lifespan = lifespan;
     }
 }

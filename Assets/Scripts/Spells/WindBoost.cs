@@ -5,8 +5,6 @@ using UnityEngine;
 public class WindBoost : BaseSpell
 {
     public GameObject windball;
-    public float initialSpace;
-
     public override void Cast()
     {
         base.Cast();
@@ -19,7 +17,5 @@ public class WindBoost : BaseSpell
 
         GameObject go = Instantiate(windball, player.transform.position, Quaternion.LookRotation(cam.forward, cam.up));
         Windball arrowS = go.GetComponent<Windball>();
-
-        go.transform.position += go.transform.forward * initialSpace;
     }
 }

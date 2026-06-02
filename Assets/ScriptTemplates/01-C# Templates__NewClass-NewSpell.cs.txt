@@ -3,13 +3,14 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "#SCRIPTNAME#", menuName = "Spell/#SCRIPTNAME#")]
 public class #SCRIPTNAME# : BaseSpell
 {
+    //Executed immediately after cast
     public override void Cast()
     {
         base.Cast();
 
         /* 
          * UNIQUE SPELL CODE HERE
-         * "player" is an already provided value of type GameObject
+         * Please visit the BaseSpell script and other base scripts to review helper functions
          * have fun!
         */
 
