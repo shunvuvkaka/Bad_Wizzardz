@@ -52,6 +52,7 @@ public class GlyphSOEditor : Editor
             if (EditorApplication.isPlaying)
             {
                 capture = false;
+                Debug.Log("Ready to capture!");
                 SceneView.duringSceneGui += CaptureMouse;
             }
             else
@@ -222,7 +223,7 @@ public class GlyphSOEditor : Editor
 
         if (e.type == EventType.MouseUp && capture)
         {
-            Debug.Log("done");
+            Debug.Log("Capture complete!");
             SceneView.duringSceneGui -= CaptureMouse;
 
             Undo.RecordObject(glyphSO, "Modify Glyph");
@@ -236,11 +237,14 @@ public class GlyphSOEditor : Editor
 
         if (e.type == EventType.MouseUp && !capture)
         {
-            Debug.Log("capturing");
+            Debug.Log("Capturing...");
             capture = true;
         }
 
-        DrawGlyph.Instance.RenderLine(glyphPoints);
+        if (DrawGlyph.Instance != null)
+            DrawGlyph.Instance.RenderLine(glyphPoints);
+        else
+            Debug.LogWarning("No glyph renderer found! Glyphs will not be visualised");
     }
 }
 #endif

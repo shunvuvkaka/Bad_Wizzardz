@@ -1,7 +1,7 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "#SCRIPTNAME#", menuName = "Spell/#SCRIPTNAME#")]
-public class #SCRIPTNAME# : BaseSpell
+[CreateAssetMenu(fileName = "PowerBlast", menuName = "Spell/PowerBlast")]
+public class PowerBlast : BaseSpell
 {
     //Executed immediately after cast
     public override void Cast()

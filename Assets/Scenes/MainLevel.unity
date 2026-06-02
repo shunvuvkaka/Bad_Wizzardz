@@ -620,7 +620,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Pool
   proceduralRoad: {fileID: 359941767}
-  terrainGenerator: {fileID: 359941770}
+  gridGenerator: {fileID: 0}
   roadPrefab: {fileID: 5975383585194910617, guid: b9a9d676682015ccfad2eb7c192356a8, type: 3}
   terrainPrefab: {fileID: 5975383585194910617, guid: 8fd3fadfc5b35abac94a4b0100135414, type: 3}
   pooledRoad: []

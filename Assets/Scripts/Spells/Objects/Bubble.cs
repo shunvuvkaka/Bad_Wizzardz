@@ -6,14 +6,7 @@ public class Bubble : BaseMovingObject
     public GameObject pop;
     void FixedUpdate()
     {
-        speed = Mathf.Lerp(speed, 0f, dampening * Time.fixedDeltaTime);
-
-        //effectively hijacking loops destruction system
-        if (lifespan < 0)
-        {
-            Pop();
-            return;
-        }
+        velocity = Mathf.Lerp(velocity, 0f, dampening * Time.fixedDeltaTime);
 
         Loop();
     }
@@ -23,7 +16,8 @@ public class Bubble : BaseMovingObject
         //in furture, code here to actually do stuff to what it collides with
     }
 
-    public void Pop()
+    public void Pop() => EndOfLife();
+    protected override void EndOfLife()
     {
         GameObject go = Instantiate(pop, transform.position, transform.rotation);
         go.GetComponent<ParticleSystem>().Play();
