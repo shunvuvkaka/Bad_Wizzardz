@@ -9,6 +9,7 @@ public class DrawGlyph : MonoBehaviour
     public float maxPointDist = 0.1f;
     public bool debugMode = false;
     public bool casting = false;
+    public bool CanCast;
 
     private List<Vector2> glyphPoints = new List<Vector2>();
     private List<GlyphSO> glyphs = new List<GlyphSO>();
@@ -34,38 +35,41 @@ public class DrawGlyph : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetMouseButton(0) && casting)
+        if (CanCast)
         {
-            if (glyphPoints.Count < 1)
+            if (Input.GetMouseButton(0) && casting)
             {
-                glyphPoints.Add((Vector2)Input.mousePosition);
-            }
-            else
-            {
-                if (Vector2.Distance(glyphPoints[glyphPoints.Count - 1], Input.mousePosition) > maxPointDist)
+                if (glyphPoints.Count < 1)
                 {
                     glyphPoints.Add((Vector2)Input.mousePosition);
                 }
+                else
+                {
+                    if (Vector2.Distance(glyphPoints[glyphPoints.Count - 1], Input.mousePosition) > maxPointDist)
+                    {
+                        glyphPoints.Add((Vector2)Input.mousePosition);
+                    }
+                }
             }
+
+            if (Input.GetMouseButtonUp(0) && casting)
+            {
+                DollarRecognizer.Result result = dollarRecognizer.Recognize(glyphPoints);
+                glyphPoints.Clear();
+
+                if (result.Match == null)
+                    return;
+
+                Debug.Log(result.ToString());
+                result.Match.Spell.Cast();
+                PlayerAnimation.Instance.Spell();
+            }
+
+            if (!casting)
+                glyphPoints.Clear();
+
+            RenderLine(glyphPoints);
         }
-
-        if (Input.GetMouseButtonUp(0) && casting)
-        {
-            DollarRecognizer.Result result = dollarRecognizer.Recognize(glyphPoints);
-            glyphPoints.Clear();
-
-            if (result.Match == null)
-                return;
-
-            Debug.Log(result.ToString());
-            result.Match.Spell.Cast();
-            PlayerAnimation.Instance.Spell();
-        }
-
-        if (!casting)
-            glyphPoints.Clear();
-
-        RenderLine(glyphPoints);
     }
 
     public void RenderLine(List<Vector2> glyphPoints)
@@ -80,4 +84,5 @@ public class DrawGlyph : MonoBehaviour
 
         lr.Points = points;
     }
+
 }

@@ -20,9 +20,11 @@ public class PlayerMovement : MonoBehaviour, IDamageable
 
     // ===== REFERENCES =====
     public Transform cameraTransform;
+    public Transform playerTransform;
     public PlayerCamera cam;
     private Rigidbody playerRB;
     public static PlayerMovement Instance;
+    public DrawGlyph Glyph;
 
     public float shiftSpeed;
 
@@ -36,13 +38,17 @@ public class PlayerMovement : MonoBehaviour, IDamageable
     public float jumpDist;
     public float jumpBuffer;
     public int jumpPause;
-    public float coyoteTime;
     public float airMovement;
     public float walkAudioSpeed;
+    private float horizontalinput;
+    private float verticalinput;
+    public float moveSpeed;
+    public float InputTimeDelay = 1;
 
     [SerializeField] private bool isGrounded;
     private bool prevGrounded;
     private bool canJump;
+    private bool control;
     private bool canMove = true;
     private Vector2 prevMovement;
     private readonly float acceleration = 0.25f; //tweak for difference in the "weight" of key presses on velocity and also speed 
@@ -63,13 +69,17 @@ public class PlayerMovement : MonoBehaviour, IDamageable
     // ===== GROUND =====
     public float groundCheckDistance = 1.1f;
     public LayerMask groundLayer;
-    private bool isGrounded;
 
     // ===== CLIMB =====
     public float climbRange = 3f;
 
     // ===== INPUT =====
     private Vector2 input;
+
+
+    public Vector2 res;
+    private bool shiftFlag;
+    Vector3 moveDirection;
 
     void Awake()
     {
@@ -112,6 +122,7 @@ public class PlayerMovement : MonoBehaviour, IDamageable
                 TryClimb();
             }
         }
+
     }
 
     void FixedUpdate()
@@ -125,6 +136,21 @@ public class PlayerMovement : MonoBehaviour, IDamageable
         Move();
     }
 
+    void SetCursorToCenter() 
+    {
+        if (control == true)
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+        control = true;
+    }
+
     // ===== MOVEMENT =====
     void Move()
     {
@@ -135,6 +161,15 @@ public class PlayerMovement : MonoBehaviour, IDamageable
         Vector3 right = cameraTransform.right;
         right.y = 0f;
         right.Normalize();
+
+        horizontalinput = Input.GetAxisRaw("Horizontal");
+        verticalinput = Input.GetAxisRaw("Vertical");
+
+        moveDirection = playerTransform.forward * verticalinput + playerTransform.right * horizontalinput;
+
+        playerRB.AddForce(moveDirection * moveSpeed * 10f, ForceMode.Force);
+
+
 
         Vector3 moveDir = forward * input.y + right * input.x;
         Vector3 desiredVelocity = moveDir * velocityScaling;
@@ -162,6 +197,7 @@ public class PlayerMovement : MonoBehaviour, IDamageable
             playerRB.linearDamping = standardFriction;
         }
 
+
         currentPuase --;
 
         Vector3 force = velocityDiff * acceleration;
@@ -182,8 +218,9 @@ public class PlayerMovement : MonoBehaviour, IDamageable
                 PlayerAudio.Instance.isWalking = false;
             }
 
-            return prevMovement *= isGrounded ? 1 : airMovement;
+          prevMovement *= isGrounded ? 1 : airMovement;
         }
+    }
 
     // ===== CLIMB =====
     void TryClimb()
@@ -199,15 +236,15 @@ public class PlayerMovement : MonoBehaviour, IDamageable
             //    EnterClimb(climb);
             //}
         }
-    }
 
-    //void EnterClimb(ClimbPoint climb)
-    //{
-    //    currentState = PlayerState.Climbing;
+
+        //void EnterClimb(ClimbPoint climb)
+        //{
+        //    currentState = PlayerState.Climbing;
 
         if (!isGrounded)
             res *= airMovement;
-        
+
         if (res != Vector2.zero && isGrounded)
         {
             PlayerAudio.Instance.isWalking = true;
@@ -217,9 +254,9 @@ public class PlayerMovement : MonoBehaviour, IDamageable
         {
             PlayerAudio.Instance.isWalking = false;
         }
-        
-        prevMovement = res;
 
+        prevMovement = res;
+    }
     //    transform.position = climb.snapPosition;
     //    transform.forward = -climb.climbNormal;
     //}
@@ -248,17 +285,29 @@ public class PlayerMovement : MonoBehaviour, IDamageable
         if (Input.GetKeyDown(KeyCode.F) &&
             (currentState == PlayerState.Normal || currentState == PlayerState.Viewing))
             ToggleObject();
+      
+     
 
         // PAUSE
-        if (Input.GetKeyDown(KeyCode.Tab) &&
-            (currentState == PlayerState.Normal || currentState == PlayerState.Paused))
-            TogglePause();
-    }
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            if (currentState == PlayerState.Normal)
+            {
+                TogglePause(); 
+            }
+            else if (currentState == PlayerState.Paused)
+            {
+                EndPause();
+            }
+        }
+            
+     
+    }   
 
     // ===== CASTING =====
     void EnterCasting()
     {
-        currentState = PlayerState.Casting;
+        currentState = PlayerState.Casting; 
 
         Time.timeScale = 0.5f;
         DrawGlyph.Instance.casting = true;
@@ -271,7 +320,7 @@ public class PlayerMovement : MonoBehaviour, IDamageable
     void ExitCasting()
     {
         currentState = PlayerState.Normal;
-
+    }
     public void MyInput()
     {
         if (GameUI.Instance.currentState == GameUI.UIState.Dead)
@@ -311,26 +360,60 @@ public class PlayerMovement : MonoBehaviour, IDamageable
 
         ObjectUI.Instance.SelectObject(ObjectUI.Instance.baseImage);
 
+    
+        cam.casting = selecting;
+
         currentState = selecting ? PlayerState.Viewing : PlayerState.Normal;
 
-        cam.casting = selecting;
+        InputTimeDelay *= -1;
+
+        if (InputTimeDelay == -1)
+        {
+            Invoke(nameof(Pause), 0.8f);
+        }
+        else 
+        {
+            Time.timeScale = 1f;
+        }
+
     }
 
     // ===== PAUSE =====
     public void TogglePause()
     {
         canMove = !canMove;
-        cam.casting = !cam.casting;
+       cam.casting = false;
+
+       if (GameUI.Instance.currentState == GameUI.UIState.Paused || GameUI.Instance.currentState == GameUI.UIState.Settings)
+           GameUI.Instance.currentState = GameUI.UIState.NotCasting;
+       else 
+       {
+          currentState = PlayerState.Paused;
+            Pause();
+      }
+      
+
+        cam.casting = (currentState == PlayerState.Paused);
+
+        Glyph.CanCast = false;
+    }
+
+    public void EndPause() 
+    {
+        SetCursorToCenter();
+        canMove = true;
+        //Glyph.CanCast = true;
 
         if (GameUI.Instance.currentState == GameUI.UIState.Paused || GameUI.Instance.currentState == GameUI.UIState.Settings)
             GameUI.Instance.currentState = GameUI.UIState.NotCasting;
-        else
-        {
-            currentState = PlayerState.Paused;
-            Time.timeScale = 0f;
-        }
 
-        cam.casting = (currentState == PlayerState.Paused);
+            currentState = PlayerState.Normal;
+            Time.timeScale = 1f;
+      
+
+        cam.casting = false;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = true; 
     }
 
     // ===== DAMAGE =====
@@ -344,5 +427,9 @@ public class PlayerMovement : MonoBehaviour, IDamageable
         {
             PlayerAnimation.Instance.Dead();
         }
+    }
+    public void Pause() 
+    {
+        Time.timeScale = 0f;
     }
 }

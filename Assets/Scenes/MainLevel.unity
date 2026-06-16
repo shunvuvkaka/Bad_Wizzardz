@@ -9407,11 +9407,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 262a057c5abacb34c885c049fac52396, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  moveSpeed: 0
-  groundDrag: 0
-  orientation: {fileID: 0}
-  playerTransform: {fileID: 1911483210}
   cameraTransform: {fileID: 330585546}
+  playerTransform: {fileID: 1911483210}
   cam: {fileID: 330585549}
   shiftSpeed: 1.5
   velocityScaling: 160
@@ -9422,14 +9419,22 @@ MonoBehaviour:
   jumpDist: 1.3
   jumpBuffer: 0.2
   jumpPause: 5
-  coyoteTime: 1
   airMovement: 0.4
   walkAudioSpeed: 0.3
+  moveSpeed: 50
   isGrounded: 0
   playerHeight: 0
   whatIsGround:
     serializedVersion: 2
     m_Bits: 0
+  jumpForce: 8
+  coyoteTime: 1
+  groundCheckDistance: 1.1
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  climbRange: 3
+  res: {x: 0, y: 0}
 --- !u!54 &1911483212
 Rigidbody:
   m_ObjectHideFlags: 0
