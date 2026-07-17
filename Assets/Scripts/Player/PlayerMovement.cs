@@ -38,6 +38,8 @@ public class PlayerMovement : MonoBehaviour, IDamageable
     public float jumpDist;
     public float jumpBuffer;
     public int jumpPause;
+    public float Jumpcooldown;
+    public float AirSpeed;
     public float airMovement;
     public float walkAudioSpeed;
     private float horizontalinput;
@@ -47,7 +49,7 @@ public class PlayerMovement : MonoBehaviour, IDamageable
 
     [SerializeField] private bool isGrounded;
     private bool prevGrounded;
-    private bool canJump;
+    private bool canJump = true;
     private bool control;
     private bool canMove = true;
     private Vector2 prevMovement;
@@ -109,13 +111,16 @@ public class PlayerMovement : MonoBehaviour, IDamageable
         // ===== JUMP / CLIMB INPUT =====
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            if (currentState == PlayerState.Climbing)
-            {
-                ExitClimb();
-            }
-            else if (coyoteTimer > 0f && currentState == PlayerState.Normal)
+      //      if (currentState == PlayerState.Climbing)
+        //    {
+          //      ExitClimb();
+        //    }
+            if (coyoteTimer > 0f && currentState == PlayerState.Normal && canJump)
             {
                 Jump();
+                canJump = false;
+
+                Invoke(nameof(ResetJump), Jumpcooldown);
             }
             else if (!isGrounded && currentState == PlayerState.Normal)
             {
@@ -218,8 +223,19 @@ public class PlayerMovement : MonoBehaviour, IDamageable
                 PlayerAudio.Instance.isWalking = false;
             }
 
-          prevMovement *= isGrounded ? 1 : airMovement;
         }
+
+        // Reset Y Velocity
+        playerRB.linearVelocity = new Vector3(playerRB.linearVelocity.x, 0f, playerRB.linearVelocity.z);
+
+        // Jump
+        playerRB.AddForce(transform.up * jumpForce, ForceMode.Impulse);
+
+    }
+
+    private void ResetJump() 
+    {
+        canJump = true;
     }
 
     // ===== CLIMB =====
